@@ -468,13 +468,12 @@ CREATE POLICY "Users can create ride requests"
   ON public.ride_requests FOR INSERT
   WITH CHECK (auth.uid() = requested_by);
 
-CREATE POLICY "Ride offerers can update request status"
+DROP POLICY IF EXISTS "Ride offerers can update request status"
+ON public.ride_requests;
+
+CREATE POLICY "Only RPCs and admins can update ride requests"
   ON public.ride_requests FOR UPDATE
-  USING (
-    auth.uid() IN (SELECT offered_by FROM public.rides WHERE id = ride_id)
-    OR auth.uid() = requested_by
-    OR public.is_admin_user()
-  );
+  USING (public.is_admin_user());
 
 -- --------------------------------------------------------------------
 -- NOTIFICATIONS POLICIES
@@ -508,3 +507,14 @@ CREATE POLICY "Users can create recurring rides"
 CREATE POLICY "Users can update their own recurring rides"
   ON public.recurring_rides FOR UPDATE
   USING (auth.uid() = offered_by OR public.is_admin_user());
+
+-- --------------------------------------------------------------------
+-- RPC EXECUTION PERMISSIONS
+-- --------------------------------------------------------------------
+REVOKE EXECUTE ON FUNCTION public.accept_ride_request(UUID, UUID) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.send_ride_request(UUID, INT) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.decline_ride_request(UUID) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.accept_ride_request(UUID, UUID) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.send_ride_request(UUID, INT) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.decline_ride_request(UUID) TO authenticated, service_role;
