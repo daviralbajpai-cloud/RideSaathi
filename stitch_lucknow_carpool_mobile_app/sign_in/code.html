@@ -1,0 +1,216 @@
+﻿<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RideSaathi - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#2563eb",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "surface-container-high": "#dce9ff",
+                      "surface-tint": "#0053db",
+                      "on-surface-variant": "#434655",
+                      "on-secondary-fixed": "#002114",
+                      "on-tertiary-fixed": "#2a1700",
+                      "outline-variant": "#c3c6d7",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#005137",
+                      "secondary-fixed-dim": "#68dba9",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-secondary-container": "#00714e",
+                      "surface-dim": "#cbdbf5",
+                      "tertiary-container": "#996100",
+                      "surface-bright": "#f8f9ff",
+                      "background": "#f8f9ff",
+                      "primary-fixed": "#dbe1ff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#00174b",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#0b1c30",
+                      "surface-container-low": "#eff4ff",
+                      "surface-variant": "#d3e4fe",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "secondary": "#006c4a",
+                      "secondary-fixed": "#85f8c4",
+                      "secondary-container": "#82f5c1",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-tertiary-container": "#ffeedd",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#b4c5ff",
+                      "surface": "#f8f9ff",
+                      "surface-container": "#e5eeff",
+                      "outline": "#737686",
+                      "on-background": "#0b1c30",
+                      "tertiary-fixed": "#ffddb8",
+                      "on-primary-container": "#eeefff",
+                      "tertiary": "#784b00",
+                      "primary": "#004ac6",
+                      "inverse-surface": "#213145",
+                      "inverse-on-surface": "#eaf1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "16px",
+                      "gutter": "12px",
+                      "xs": "8px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "md": "16px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-bold": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface text-on-surface h-screen w-full flex flex-col items-center justify-center font-body-lg overflow-hidden">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0">
+<div class="absolute inset-0 bg-surface/90 backdrop-blur-sm z-10"></div>
+<img class="w-full h-full object-cover" data-alt="A bright, abstract, modern-corporate background featuring soft, fluid geometric shapes in light slate, subtle white, and vibrant primary blue. The lighting is high-key, creating a clean, pristine, and optimistic atmosphere suitable for a professional yet friendly mobility app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9RpkGiRSO9pxTckXDCAbh1G-kKFDd7Eiw46xyeoSi0qf0-_rGUQwGSAnyVd-f121vrMm553mfNagDk9DJAAWGiFtWvK_-K4bPYDcXzBGEyXtmOHQBBGpI-3XVwI_gqTTT3Y2Xkd3ZdE4liMbyeNJbnLYPPCyfORmbeQRxwNNkRBXASUR1IvoCg_J_A8ZC6om4hx1utsyuUGLLSEKpVnKx29SY14HCZyHd15yKKR4y8QpqHC_ErvR9Pw"/>
+</div>
+<!-- Main Content Container -->
+<main class="relative z-10 w-full max-w-[400px] px-container-margin flex flex-col items-center justify-center flex-grow text-center">
+<!-- Branding -->
+<div class="mb-xl flex flex-col items-center animate-fade-in-up">
+<div class="w-20 h-20 bg-primary-container text-on-primary-container rounded-2xl flex items-center justify-center mb-md shadow-lg shadow-[0_8px_24px_rgba(37,99,235,0.2)]">
+<span class="material-symbols-outlined text-4xl" data-icon="directions_car" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary tracking-tight">RideSaathi</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-xs">Smart commuting starts here.</p>
+</div>
+<!-- Action Area -->
+<div class="w-full bg-surface-container-lowest rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.05)] p-lg border border-outline-variant/30 w-full flex flex-col gap-md animate-fade-in-up delay-100">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Welcome Back</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Sign in to find rides or offer empty seats.</p>
+<button class="w-full min-h-[52px] bg-surface-container-lowest border border-outline-variant rounded-[16px] flex items-center justify-center gap-sm hover:bg-surface-container-low transition-colors duration-200 active:scale-95 group shadow-sm">
+<!-- Simple Google G Logo SVG for visual accuracy without external image dependency -->
+<svg height="24px" viewbox="0 0 48 48" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" fill="#EA4335"></path>
+<path d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" fill="#4285F4"></path>
+<path d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" fill="#FBBC05"></path>
+<path d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" fill="#34A853"></path>
+<path d="M0 0h48v48H0z" fill="none"></path>
+</svg>
+<span class="font-label-bold text-label-bold text-on-surface">Continue with Google</span>
+</button>
+</div>
+</main>
+<!-- Footer Links -->
+<footer class="w-full py-lg px-container-margin text-center absolute bottom-0 z-10 animate-fade-in-up delay-200">
+<div class="flex items-center justify-center gap-md font-body-sm text-body-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors underline decoration-outline-variant hover:decoration-primary underline-offset-4" href="#">Privacy Policy</a>
+<span class="w-[4px] h-[4px] rounded-full bg-outline-variant"></span>
+<a class="hover:text-primary transition-colors underline decoration-outline-variant hover:decoration-primary underline-offset-4" href="#">Terms of Service</a>
+</div>
+</footer>
+<style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .delay-100 {
+            animation-delay: 100ms;
+        }
+        .delay-200 {
+            animation-delay: 200ms;
+        }
+    </style>
+</body></html>

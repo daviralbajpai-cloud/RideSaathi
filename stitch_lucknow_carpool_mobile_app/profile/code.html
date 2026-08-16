@@ -1,0 +1,273 @@
+﻿<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile - RideSaathi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#d3e4fe",
+                        "primary-container": "#2563eb",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-tint": "#0053db",
+                        "on-surface-variant": "#434655",
+                        "on-secondary-fixed": "#002114",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#005137",
+                        "secondary-fixed-dim": "#68dba9",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-container": "#00714e",
+                        "surface-dim": "#cbdbf5",
+                        "tertiary-container": "#996100",
+                        "surface-bright": "#f8f9ff",
+                        "background": "#f8f9ff",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "surface-container-low": "#eff4ff",
+                        "surface-variant": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "secondary": "#006c4a",
+                        "secondary-fixed": "#85f8c4",
+                        "secondary-container": "#82f5c1",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary-container": "#ffeedd",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#b4c5ff",
+                        "surface": "#f8f9ff",
+                        "surface-container": "#e5eeff",
+                        "outline": "#737686",
+                        "on-background": "#0b1c30",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-primary-container": "#eeefff",
+                        "tertiary": "#784b00",
+                        "primary": "#004ac6",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-margin": "16px",
+                        "gutter": "12px",
+                        "xs": "8px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "md": "16px",
+                        "sm": "12px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #F8FAFC;
+        }
+        /* Mobile-first constraints */
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background-color: #F8FAFC;
+            position: relative;
+            padding-bottom: 80px; /* Space for BottomNavBar */
+        }
+        /* Soft shadow for cards */
+        .card-shadow {
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="text-on-background font-body-lg">
+<div class="app-container">
+<!-- TopAppBar (Web only, hidden on mobile per prompt rules, but structurally requested by JSON) -->
+<header class="hidden md:flex justify-between items-center px-container-margin h-16 w-full max-w-[600px] mx-auto bg-surface dark:bg-surface-dim flat no shadows full-width top-0 z-40 relative border-b border-outline-variant/30">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim text-2xl" data-icon="menu">menu</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim tracking-tight">RideSaathi</span>
+</div>
+<!-- Expanded Nav for Web -->
+<nav class="flex gap-md">
+<a class="text-on-surface-variant dark:text-outline font-label-bold text-label-bold hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg" href="#">Home</a>
+<a class="text-on-surface-variant dark:text-outline font-label-bold text-label-bold hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg" href="#">Find</a>
+<a class="text-on-surface-variant dark:text-outline font-label-bold text-label-bold hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg" href="#">Offer</a>
+<a class="text-on-surface-variant dark:text-outline font-label-bold text-label-bold hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg" href="#">Activity</a>
+<a class="text-primary dark:text-primary-fixed-dim font-label-bold text-label-bold hover:bg-surface-container-low transition-colors px-3 py-2 rounded-lg opacity-80 scale-95 transition-transform bg-surface-container-high rounded-xl" href="#">Profile</a>
+</nav>
+</header>
+<!-- Main Content Area -->
+<main class="px-container-margin pt-xl pb-xl flex flex-col gap-lg">
+<!-- Page Header (Mobile friendly) -->
+<div class="md:hidden pt-4 pb-2">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">Profile</h1>
+</div>
+<!-- User Info Bento Card -->
+<section class="bg-surface rounded-xl card-shadow p-lg flex flex-col items-center gap-md relative overflow-hidden">
+<!-- Decorative background blur -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+<div class="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary/10 rounded-full blur-2xl"></div>
+<div class="relative z-10 w-24 h-24 rounded-full overflow-hidden border-4 border-surface-container-lowest shadow-sm">
+<img alt="User Profile Photo" class="w-full h-full object-cover" data-alt="A close-up, modern corporate portrait of a young professional smiling warmly. High-quality lighting, bright clean light-mode aesthetic, vibrant primary blue accents in the background. Friendly and approachable demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRtC-V4vL5Eoc4En9qO-44fPhK16HinFEsbWtAM-FGKSfdGOjXUrX39z6UIRZZIGW9IqV-xPheJU9CZ-dSHzr-bblRSMMyENSLvsPPJI9IgwURjvumRt4k4Cfr804CrUps4eb_5jK6eEYP4Sa2CkBPB5VcJFfPrsQ2K2VtTdw8_129HSJpXBg5mYCYUsyI6bX9p3BjZJLmw4P_HRUY8LcJIGXoansMmM9YZtNQm_ffyAn4F7giVjnOMw"/>
+</div>
+<div class="text-center relative z-10">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-1">Rohan Sharma</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="call">call</span>
+                        +91 98765 43210
+                    </p>
+</div>
+<div class="w-full flex gap-sm mt-2 relative z-10">
+<button class="flex-1 bg-primary text-on-primary font-label-bold text-label-bold rounded-lg h-[44px] flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span>
+                        Edit Profile
+                    </button>
+<button class="w-[44px] h-[44px] border border-outline-variant rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+</div>
+</section>
+<!-- Stats/Mini Bento (Optional but adds value) -->
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface rounded-xl card-shadow p-md flex flex-col gap-1 items-center text-center">
+<span class="material-symbols-outlined text-secondary text-2xl" data-icon="local_taxi">local_taxi</span>
+<span class="font-headline-md text-headline-md text-on-surface">42</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Rides Taken</span>
+</div>
+<div class="bg-surface rounded-xl card-shadow p-md flex flex-col gap-1 items-center text-center">
+<span class="material-symbols-outlined text-tertiary text-2xl" data-icon="star">star</span>
+<span class="font-headline-md text-headline-md text-on-surface">4.9</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Avg Rating</span>
+</div>
+</div>
+<!-- Options List -->
+<section class="bg-surface rounded-xl card-shadow overflow-hidden flex flex-col">
+<!-- Settings -->
+<button class="w-full min-h-[64px] px-md py-sm flex items-center justify-between hover:bg-surface-container-low transition-colors border-b border-outline-variant/20 last:border-b-0 group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Settings</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Payment Methods -->
+<button class="w-full min-h-[64px] px-md py-sm flex items-center justify-between hover:bg-surface-container-low transition-colors border-b border-outline-variant/20 last:border-b-0 group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Payment Methods</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Saved Places -->
+<button class="w-full min-h-[64px] px-md py-sm flex items-center justify-between hover:bg-surface-container-low transition-colors border-b border-outline-variant/20 last:border-b-0 group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="bookmark">bookmark</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Saved Places</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</button>
+</section>
+<!-- Safety & Support -->
+<section class="bg-surface rounded-xl card-shadow overflow-hidden flex flex-col">
+<!-- Report / Safety -->
+<button class="w-full min-h-[64px] px-md py-sm flex items-center justify-between hover:bg-error-container/20 transition-colors border-b border-outline-variant/20 last:border-b-0 group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-error group-hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Report / Safety</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</button>
+<!-- Help Center -->
+<button class="w-full min-h-[64px] px-md py-sm flex items-center justify-between hover:bg-surface-container-low transition-colors border-b border-outline-variant/20 last:border-b-0 group">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant group-hover:text-primary group-hover:bg-primary-container/10 transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Help Center</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
+</button>
+</section>
+<!-- Logout -->
+<div class="mt-4">
+<button class="w-full min-h-[52px] border border-error/50 text-error font-label-bold text-label-bold rounded-xl flex items-center justify-center gap-2 hover:bg-error-container/30 transition-colors">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                    Logout
+                </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 max-w-[600px] mx-auto bg-surface-container-lowest dark:bg-inverse-surface rounded-t-xl shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform" data-icon="home">home</span>
+<span class="font-label-bold text-[10px] mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform" data-icon="search">search</span>
+<span class="font-label-bold text-[10px] mt-1">Find</span>
+</a>
+<!-- FAB-like center button for Offer -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors relative -top-3" href="#">
+<div class="w-12 h-12 bg-secondary text-on-secondary rounded-full flex items-center justify-center shadow-lg hover:bg-secondary/90 transition-colors">
+<span class="material-symbols-outlined text-2xl" data-icon="add_circle">add_circle</span>
+</div>
+<span class="font-label-bold text-[10px] mt-1">Offer</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform" data-icon="history">history</span>
+<span class="font-label-bold text-[10px] mt-1">Activity</span>
+</a>
+<!-- Active State -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim bg-surface-container-high dark:bg-surface-tint/20 rounded-xl px-3 py-1 scale-90 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="person" data-weight="fill" style="font-variation-settings: 'FILL' 1;">person</span>
+<span class="font-label-bold text-[10px] mt-1">Profile</span>
+</a>
+</nav>
+</div>
+</body></html>

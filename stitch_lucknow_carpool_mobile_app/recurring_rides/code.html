@@ -1,0 +1,330 @@
+﻿<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Set Recurring Ride - RideSaathi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-container-highest": "#d3e4fe",
+                "primary-container": "#2563eb",
+                "error-container": "#ffdad6",
+                "on-primary": "#ffffff",
+                "surface-container-high": "#dce9ff",
+                "surface-tint": "#0053db",
+                "on-surface-variant": "#434655",
+                "on-secondary-fixed": "#002114",
+                "on-tertiary-fixed": "#2a1700",
+                "outline-variant": "#c3c6d7",
+                "on-tertiary-fixed-variant": "#653e00",
+                "on-error": "#ffffff",
+                "on-tertiary": "#ffffff",
+                "on-secondary-fixed-variant": "#005137",
+                "secondary-fixed-dim": "#68dba9",
+                "primary-fixed-dim": "#b4c5ff",
+                "on-secondary-container": "#00714e",
+                "surface-dim": "#cbdbf5",
+                "tertiary-container": "#996100",
+                "surface-bright": "#f8f9ff",
+                "background": "#f8f9ff",
+                "primary-fixed": "#dbe1ff",
+                "surface-container-lowest": "#ffffff",
+                "on-primary-fixed": "#00174b",
+                "on-secondary": "#ffffff",
+                "on-surface": "#0b1c30",
+                "surface-container-low": "#eff4ff",
+                "surface-variant": "#d3e4fe",
+                "error": "#ba1a1a",
+                "on-primary-fixed-variant": "#003ea8",
+                "secondary": "#006c4a",
+                "secondary-fixed": "#85f8c4",
+                "secondary-container": "#82f5c1",
+                "tertiary-fixed-dim": "#ffb95f",
+                "on-tertiary-container": "#ffeedd",
+                "on-error-container": "#93000a",
+                "inverse-primary": "#b4c5ff",
+                "surface": "#f8f9ff",
+                "surface-container": "#e5eeff",
+                "outline": "#737686",
+                "on-background": "#0b1c30",
+                "tertiary-fixed": "#ffddb8",
+                "on-primary-container": "#eeefff",
+                "tertiary": "#784b00",
+                "primary": "#004ac6",
+                "inverse-surface": "#213145",
+                "inverse-on-surface": "#eaf1ff"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "container-margin": "16px",
+                "gutter": "12px",
+                "xs": "8px",
+                "xl": "32px",
+                "lg": "24px",
+                "base": "4px",
+                "md": "16px",
+                "sm": "12px"
+        },
+        "fontFamily": {
+                "headline-lg": [
+                        "Plus Jakarta Sans"
+                ],
+                "body-lg": [
+                        "Plus Jakarta Sans"
+                ],
+                "body-sm": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-md": [
+                        "Plus Jakarta Sans"
+                ],
+                "label-bold": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-lg-mobile": [
+                        "Plus Jakarta Sans"
+                ]
+        },
+        "fontSize": {
+                "headline-lg": [
+                        "30px",
+                        {
+                                "lineHeight": "38px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-sm": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "20px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "label-bold": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "700"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+  body {
+    background-color: theme('colors.background');
+    color: theme('colors.on-background');
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>
+</head>
+<body class="font-body-lg text-body-lg min-h-screen pb-32 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim docked full-width top-0 bg-surface dark:bg-surface-dim flat no shadows flex justify-between items-center px-container-margin h-16 w-full max-w-[600px] mx-auto z-40 sticky">
+<div class="flex items-center gap-4">
+<button aria-label="Menu" class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full p-2 flex items-center justify-center opacity-80 scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">RideSaathi</h1>
+</div>
+</header>
+<main class="w-full max-w-[600px] mx-auto px-container-margin pt-6">
+<div class="mb-8">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2">Set Recurring Ride</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Automate your daily commute by setting up a recurring offer.</p>
+</div>
+<form class="space-y-6">
+<!-- Route Section -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-4 space-y-4">
+<h3 class="font-headline-md text-headline-md text-on-surface">Route</h3>
+<div class="relative">
+<div class="absolute left-6 top-6 bottom-6 w-0.5 bg-outline-variant rounded-full z-0"></div>
+<div class="relative z-10 flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center flex-shrink-0 border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-primary" data-icon="trip_origin">trip_origin</span>
+</div>
+<div class="flex-grow">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-1">From</label>
+<input class="w-full h-[52px] rounded-lg border border-outline-variant bg-surface px-4 font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary-container/20 transition-all outline-none" placeholder="e.g., Gomti Nagar" type="text">
+</div>
+</div>
+<div class="relative z-10 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center flex-shrink-0 border-2 border-surface-container-lowest">
+<span class="material-symbols-outlined text-secondary" data-icon="location_on">location_on</span>
+</div>
+<div class="flex-grow">
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-1">To</label>
+<input class="w-full h-[52px] rounded-lg border border-outline-variant bg-surface px-4 font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary-container/20 transition-all outline-none" placeholder="e.g., Hazratganj" type="text">
+</div>
+</div>
+</div>
+</div>
+<!-- Schedule Section -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-4 space-y-6">
+<h3 class="font-headline-md text-headline-md text-on-surface">Schedule</h3>
+<!-- Days -->
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-3">Repeat Days</label>
+<div class="flex justify-between items-center gap-2">
+<label class="cursor-pointer group flex-1">
+<input checked="" class="peer sr-only" type="checkbox">
+<div class="h-10 w-full rounded-full border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+                        M
+                    </div>
+</label>
+<label class="cursor-pointer group flex-1">
+<input checked="" class="peer sr-only" type="checkbox">
+<div class="h-10 w-full rounded-full border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+                        T
+                    </div>
+</label>
+<label class="cursor-pointer group flex-1">
+<input checked="" class="peer sr-only" type="checkbox">
+<div class="h-10 w-full rounded-full border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+                        W
+                    </div>
+</label>
+<label class="cursor-pointer group flex-1">
+<input checked="" class="peer sr-only" type="checkbox">
+<div class="h-10 w-full rounded-full border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+                        T
+                    </div>
+</label>
+<label class="cursor-pointer group flex-1">
+<input checked="" class="peer sr-only" type="checkbox">
+<div class="h-10 w-full rounded-full border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+                        F
+                    </div>
+</label>
+<label class="cursor-pointer group flex-1">
+<input class="peer sr-only" type="checkbox">
+<div class="h-10 w-full rounded-full border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+                        S
+                    </div>
+</label>
+<label class="cursor-pointer group flex-1">
+<input class="peer sr-only" type="checkbox">
+<div class="h-10 w-full rounded-full border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+                        S
+                    </div>
+</label>
+</div>
+</div>
+<!-- Time & Seats -->
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface-variant mb-1">Departure Time</label>
+<div class="relative">
+<input class="w-full h-[52px] rounded-lg border border-outline-variant bg-surface px-4 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-2 focus:ring-primary-container/20 transition-all outline-none" type="time" value="09:00">
+</div>
+</div>
+<div>
+  <label class="block font-label-bold text-label-bold text-on-surface-variant mb-1">Total seats needed</label>
+  <div class="flex gap-2">
+    <label class="cursor-pointer group flex-1">
+      <input type="radio" name="seats" value="1" class="peer sr-only">
+      <div class="h-[52px] w-full rounded-lg border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+        1
+      </div>
+    </label>
+    <label class="cursor-pointer group flex-1">
+      <input type="radio" name="seats" value="2" class="peer sr-only">
+      <div class="h-[52px] w-full rounded-lg border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+        2
+      </div>
+    </label>
+    <label class="cursor-pointer group flex-1">
+      <input type="radio" name="seats" value="3" checked="" class="peer sr-only">
+      <div class="h-[52px] w-full rounded-lg border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+        3
+      </div>
+    </label>
+    <label class="cursor-pointer group flex-1">
+      <input type="radio" name="seats" value="4" class="peer sr-only">
+      <div class="h-[52px] w-full rounded-lg border border-outline-variant flex items-center justify-center font-body-sm text-body-sm text-on-surface peer-checked:bg-primary peer-checked:border-primary peer-checked:text-on-primary transition-colors">
+        4
+      </div>
+    </label>
+  </div>
+</div>
+</div>
+</div>
+<!-- Action -->
+<div class="pt-4">
+<button class="w-full h-[52px] bg-primary text-on-primary font-label-bold text-label-bold rounded-xl flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant transition-colors shadow-md" type="button">
+<span class="material-symbols-outlined" data-icon="event_repeat">event_repeat</span>
+              Set Recurring Ride
+          </button>
+</div>
+</form>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 max-w-[600px] mx-auto bg-surface-container-lowest dark:bg-inverse-surface shadow-[0_-4px_12px_rgba(0,0,0,0.1)] rounded-t-xl border-t border-outline-variant dark:border-none">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 duration-150 ease-in-out" data-icon="home">home</span>
+<span class="font-label-bold text-label-bold text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 duration-150 ease-in-out" data-icon="search">search</span>
+<span class="font-label-bold text-label-bold text-[10px]">Find</span>
+</a>
+<!-- Active State: Offer -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim bg-surface-container-high dark:bg-surface-tint/20 rounded-xl px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group scale-90 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="add_circle">add_circle</span>
+<span class="font-label-bold text-label-bold text-[10px]">Offer</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 duration-150 ease-in-out" data-icon="history">history</span>
+<span class="font-label-bold text-label-bold text-[10px]">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 duration-150 ease-in-out" data-icon="person">person</span>
+<span class="font-label-bold text-label-bold text-[10px]">Profile</span>
+</a>
+</nav>
+
+
+</body></html>

@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Profile Setup - RideSaathi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#d3e4fe",
+                        "primary-container": "#2563eb",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-tint": "#0053db",
+                        "on-surface-variant": "#434655",
+                        "on-secondary-fixed": "#002114",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline-variant": "#c3c6d7",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#005137",
+                        "secondary-fixed-dim": "#68dba9",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "on-secondary-container": "#00714e",
+                        "surface-dim": "#cbdbf5",
+                        "tertiary-container": "#996100",
+                        "surface-bright": "#f8f9ff",
+                        "background": "#f8f9ff",
+                        "primary-fixed": "#dbe1ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#00174b",
+                        "on-secondary": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "surface-container-low": "#eff4ff",
+                        "surface-variant": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "secondary": "#006c4a",
+                        "secondary-fixed": "#85f8c4",
+                        "secondary-container": "#82f5c1",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary-container": "#ffeedd",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#b4c5ff",
+                        "surface": "#f8f9ff",
+                        "surface-container": "#e5eeff",
+                        "outline": "#737686",
+                        "on-background": "#0b1c30",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-primary-container": "#eeefff",
+                        "tertiary": "#784b00",
+                        "primary": "#004ac6",
+                        "inverse-surface": "#213145",
+                        "inverse-on-surface": "#eaf1ff"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "container-margin": "16px",
+                        gutter: "12px",
+                        xs: "8px",
+                        xl: "32px",
+                        lg: "24px",
+                        base: "4px",
+                        md: "16px",
+                        sm: "12px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-bold": ["Plus Jakarta Sans"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["30px", { lineHeight: "38px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+                        "body-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "headline-md": ["20px", { lineHeight: "28px", fontWeight: "600" }],
+                        "label-bold": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col items-center">
+<!-- Main Container -->
+<main class="w-full max-w-[600px] flex-1 flex flex-col px-container-margin py-xl pt-12 relative">
+<!-- Header -->
+<header class="mb-lg flex flex-col gap-xs">
+<!-- Back Action -->
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors mb-sm">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-primary">Set up your profile</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Let's get you ready for your first ride.</p>
+</header>
+<!-- Form Area -->
+<form action="#" class="flex-1 flex flex-col gap-lg" method="POST">
+<!-- Profile Photo Upload -->
+<div class="flex flex-col items-center justify-center gap-sm">
+<div class="relative group cursor-pointer">
+<div class="w-32 h-32 rounded-full bg-surface-container border-2 border-dashed border-outline-variant flex items-center justify-center overflow-hidden transition-colors group-hover:border-primary group-hover:bg-surface-container-high">
+<!-- Placeholder Icon -->
+<span class="material-symbols-outlined text-4xl text-outline group-hover:text-primary transition-colors">add_a_photo</span>
+<!-- Image Element (Hidden by default, shown if image selected) -->
+<img class="absolute inset-0 w-full h-full object-cover hidden" data-alt="A generic placeholder image showing a silhouette of a person for a profile picture upload area. The style is clean, modern, and minimalist with a soft white background and subtle light blue accents matching a bright light-mode UI." id="profile-preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApN0CpU7Mk550I1Css2Y_NizYggtOoUGytIkC8HCQ5Nf9u4-3MDmCkoZKEbrMEwzdPeRJ7ny5FlY02z69cQXyDxab1g3q_eByuF2h3B_Y3GgKRGAO1n7qVkQA9cnDUVp6vWLwJiskan0gD19iNjvzuu3RnMTXUNbDpt2902adlXG4tXygt-1RzeVdSlASYwWKGbOtlv3e6vXTD8zt95m2NnIvT_JtshjHge5FZrLJ8d7dmfGg8HnlV3A"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-on-primary w-8 h-8 rounded-full flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-sm">edit</span>
+</div>
+</div>
+<span class="font-label-bold text-label-bold text-primary cursor-pointer hover:underline">Upload Photo</span>
+<input accept="image/*" class="hidden" id="photo-upload" type="file"/>
+</div>
+<!-- Input Fields -->
+<div class="flex flex-col gap-md">
+<!-- Name Field -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-bold text-label-bold text-on-surface" for="full-name">Full Name</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">person</span>
+<input class="w-full h-[52px] pl-12 pr-4 bg-surface rounded-xl border border-outline-variant text-on-surface font-body-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm placeholder:text-outline/70" id="full-name" placeholder="Enter your full name" type="text"/>
+</div>
+</div>
+<!-- Phone Field -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-bold text-label-bold text-on-surface" for="phone-number">Phone Number</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">call</span>
+<div class="absolute left-12 top-1/2 -translate-y-1/2 text-on-surface font-body-lg flex items-center gap-1 border-r border-outline-variant pr-2">
+<span>+91</span>
+</div>
+<input class="w-full h-[52px] pl-[84px] pr-4 bg-surface rounded-xl border border-outline-variant text-on-surface font-body-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all shadow-sm placeholder:text-outline/70" id="phone-number" pattern="[0-9]{10}" placeholder="00000 00000" type="tel"/>
+</div>
+</div>
+</div>
+<!-- Spacer to push CTA to bottom on short screens -->
+<div class="flex-1 min-h-[32px]"></div>
+<!-- Primary CTA -->
+<div class="sticky bottom-4 w-full">
+<button class="w-full h-[52px] bg-primary text-on-primary font-headline-md text-headline-md rounded-xl flex items-center justify-center gap-2 hover:bg-primary-container active:scale-[0.98] transition-all shadow-md" type="submit">
+                    Complete Setup
+                    <span class="material-symbols-outlined text-on-primary">check_circle</span>
+</button>
+</div>
+</form>
+</main>
+</body></html>

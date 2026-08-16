@@ -1,0 +1,224 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Ride Request</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#2563eb",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "surface-container-high": "#dce9ff",
+                      "surface-tint": "#0053db",
+                      "on-surface-variant": "#434655",
+                      "on-secondary-fixed": "#002114",
+                      "on-tertiary-fixed": "#2a1700",
+                      "outline-variant": "#c3c6d7",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#005137",
+                      "secondary-fixed-dim": "#68dba9",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-secondary-container": "#00714e",
+                      "surface-dim": "#cbdbf5",
+                      "tertiary-container": "#996100",
+                      "surface-bright": "#f8f9ff",
+                      "background": "#f8f9ff",
+                      "primary-fixed": "#dbe1ff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#00174b",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#0b1c30",
+                      "surface-container-low": "#eff4ff",
+                      "surface-variant": "#d3e4fe",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "secondary": "#006c4a",
+                      "secondary-fixed": "#85f8c4",
+                      "secondary-container": "#82f5c1",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-tertiary-container": "#ffeedd",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#b4c5ff",
+                      "surface": "#f8f9ff",
+                      "surface-container": "#e5eeff",
+                      "outline": "#737686",
+                      "on-background": "#0b1c30",
+                      "tertiary-fixed": "#ffddb8",
+                      "on-primary-container": "#eeefff",
+                      "tertiary": "#784b00",
+                      "primary": "#004ac6",
+                      "inverse-surface": "#213145",
+                      "inverse-on-surface": "#eaf1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "16px",
+                      "gutter": "12px",
+                      "xs": "8px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "md": "16px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-bold": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col font-body-lg">
+<!-- TopAppBar (Suppressed for transactional screen, using a simple back header instead) -->
+<header class="flex items-center px-container-margin h-16 w-full max-w-[600px] mx-auto bg-surface z-10 sticky top-0">
+<button class="p-2 -ml-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="ml-2 font-headline-md text-headline-md text-on-surface">Request Details</h1>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-center px-container-margin pb-32 max-w-[600px] mx-auto w-full">
+<div class="bg-surface-container-lowest rounded-[24px] p-lg shadow-[0_4px_24px_rgba(0,0,0,0.06)] w-full flex flex-col items-center text-center max-w-[400px]">
+<!-- User Avatar -->
+<div class="relative mb-md">
+<img class="w-24 h-24 rounded-full object-cover border-4 border-surface shadow-sm z-10 relative" data-alt="A portrait photo of a smiling professional person in a modern bright setting. Soft lighting, high quality, casual business attire. The image should convey trust and approachability for a ride-sharing profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiidgMCQz9GARd0p1ciV5-0WOpJczHLU9HZ6AlyrWAaQIPt6rXannTphlaSoWDFbOkyZV0XBd3xU4dk4as3vPwopgkBXsrIp4Pgd5Ld5b3PhxqvU0kD71ZK55yYxjP9CPcr_MG-jy-mBhIUjvSF7lhc8LwhZccDcD67OykuX33gEJiO5-5WabIR-wLCunOWCdrU5EL9KYhMn5W8fKBOVYl5ms4d5BEWEPA_SXDvs6yLpJJnLeahirvlQ">
+<div class="absolute inset-0 rounded-full bg-primary-fixed blur-md -z-0 transform scale-110 opacity-50"></div>
+</div>
+<!-- Header Text -->
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-xs">
+                Sarah Jenkins
+            </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl">Sarah Jenkins wants to join with 0 additional people</p>
+<!-- Ride Context Mini-Card -->
+<div class="w-full bg-surface-container-low rounded-xl p-md mb-xl text-left border border-outline-variant/30">
+<div class="flex items-center mb-sm">
+<span class="material-symbols-outlined text-primary mr-sm text-[20px]">directions_car</span>
+<span class="font-label-bold text-label-bold text-primary">YOUR RIDE</span>
+</div>
+<div class="flex relative mb-4">
+<!-- Route Line -->
+<div class="absolute left-[9px] top-[14px] bottom-[14px] w-[2px] bg-outline-variant/50"></div>
+<div class="flex flex-col gap-md">
+<div class="flex items-start">
+<div class="w-[20px] h-[20px] rounded-full border-[4px] border-surface-container-lowest bg-primary shadow-sm z-10 mt-1 mr-sm"></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-none mb-1">From</p>
+<p class="font-headline-md text-headline-md text-on-surface leading-tight">Hazratganj</p>
+</div>
+</div>
+<div class="flex items-start">
+<div class="w-[20px] h-[20px] rounded-full border-[4px] border-surface-container-lowest bg-secondary shadow-sm z-10 mt-1 mr-sm"></div>
+<div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-none mb-1">To</p>
+<p class="font-headline-md text-headline-md text-on-surface leading-tight">Gomti Nagar</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-sm border-t border-outline-variant/30 mt-sm">
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined mr-xs text-[18px]">calendar_today</span>
+<span class="font-body-sm text-body-sm">Today, 5:30 PM</span>
+</div>
+<div class="flex items-center text-on-surface-variant"><span class="material-symbols-outlined mr-xs text-[18px]">person</span><span class="font-body-sm text-body-sm">Seats requested: 1</span></div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col gap-sm w-full">
+<button class="w-full min-h-[52px] bg-secondary text-on-secondary rounded-xl font-label-bold text-label-bold flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity active:scale-[0.98]">
+<span class="material-symbols-outlined mr-2">check</span>
+                    Accept Request
+                </button>
+<button class="w-full min-h-[52px] bg-transparent border border-outline-variant text-error rounded-xl font-label-bold text-label-bold flex items-center justify-center hover:bg-error-container/20 transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined mr-2">close</span>
+                    Reject
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Suppressed due to contextual state & identity rules: this is a transactional decision screen with a close/back implied, prioritizing the canvas) -->
+
+
+</body></html>

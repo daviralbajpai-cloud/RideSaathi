@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RideSaathi - No Ride Found</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#2563eb",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "surface-container-high": "#dce9ff",
+                      "surface-tint": "#0053db",
+                      "on-surface-variant": "#434655",
+                      "on-secondary-fixed": "#002114",
+                      "on-tertiary-fixed": "#2a1700",
+                      "outline-variant": "#c3c6d7",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#005137",
+                      "secondary-fixed-dim": "#68dba9",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-secondary-container": "#00714e",
+                      "surface-dim": "#cbdbf5",
+                      "tertiary-container": "#996100",
+                      "surface-bright": "#f8f9ff",
+                      "background": "#f8f9ff",
+                      "primary-fixed": "#dbe1ff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#00174b",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#0b1c30",
+                      "surface-container-low": "#eff4ff",
+                      "surface-variant": "#d3e4fe",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "secondary": "#006c4a",
+                      "secondary-fixed": "#85f8c4",
+                      "secondary-container": "#82f5c1",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-tertiary-container": "#ffeedd",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#b4c5ff",
+                      "surface": "#f8f9ff",
+                      "surface-container": "#e5eeff",
+                      "outline": "#737686",
+                      "on-background": "#0b1c30",
+                      "tertiary-fixed": "#ffddb8",
+                      "on-primary-container": "#eeefff",
+                      "tertiary": "#784b00",
+                      "primary": "#004ac6",
+                      "inverse-surface": "#213145",
+                      "inverse-on-surface": "#eaf1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "16px",
+                      "gutter": "12px",
+                      "xs": "8px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "md": "16px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-bold": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #F8FAFC; /* Slate-50 Level 0 Background */
+        }
+    </style>
+</head>
+<body class="antialiased text-on-surface flex flex-col min-h-screen">
+<!-- TopAppBar (Hidden on Mobile, flex on md) -->
+<header class="hidden md:flex justify-between items-center px-container-margin h-16 w-full max-w-[600px] mx-auto bg-surface dark:bg-surface-dim flat no shadows docked full-width top-0 z-50">
+<div class="flex items-center gap-md">
+<button aria-label="Menu" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">RideSaathi</h1>
+</div>
+<!-- Desktop Nav Items -->
+<nav class="flex gap-sm">
+<a class="font-label-bold text-label-bold px-4 py-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">Home</a>
+<!-- 'Find' is active semantically as we are looking for a ride -->
+<a class="font-label-bold text-label-bold px-4 py-2 rounded-full transition-colors text-primary bg-surface-container-low" href="#">Find</a>
+<a class="font-label-bold text-label-bold px-4 py-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">Offer</a>
+<a class="font-label-bold text-label-bold px-4 py-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">Activity</a>
+<a class="font-label-bold text-label-bold px-4 py-2 rounded-full hover:bg-surface-container-low transition-colors text-on-surface-variant" href="#">Profile</a>
+</nav>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col items-center justify-center p-container-margin w-full max-w-[600px] mx-auto pb-[100px] md:pb-container-margin">
+<div class="w-full flex flex-col items-center text-center space-y-xl">
+<!-- Illustration / Icon -->
+<div class="w-48 h-48 rounded-full bg-surface-container-low flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+<span class="material-symbols-outlined text-outline-variant" style="font-size: 80px; font-variation-settings: 'FILL' 0;">check_indeterminate_small</span>
+</div>
+<!-- Text Content -->
+<div class="space-y-sm max-w-sm">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface">No suitable carpool found.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Try changing your time or route to see more options.</p>
+</div>
+<!-- Actions -->
+<div class="w-full flex flex-col gap-sm max-w-sm pt-md">
+<!-- Primary Action: Edit Search -->
+<button class="w-full h-[52px] rounded-xl bg-primary text-on-primary font-label-bold text-label-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit_calendar</span>
+                    Modify Search
+                </button>
+<!-- Secondary Fallback CTA -->
+<div class="relative flex items-center py-sm">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="flex-shrink-0 mx-4 text-outline font-label-bold text-label-bold">OR</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<button class="w-full h-[52px] rounded-xl bg-transparent border border-outline-variant text-on-surface font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-secondary" style="font-size: 20px;">local_taxi</span>
+                    Book a Cab
+                    <span class="material-symbols-outlined ml-auto text-outline" style="font-size: 16px;">open_in_new</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 max-w-[600px] mx-auto bg-surface-container-lowest dark:bg-inverse-surface docked full-width bottom-0 rounded-t-xl shadow-[0_-4px_12px_rgba(0,0,0,0.1)]">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-bold text-[10px] mt-1">Home</span>
+</a>
+<!-- Active State: 'Find' -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim bg-surface-container-high dark:bg-surface-tint/20 rounded-xl px-3 py-1 scale-90 duration-150 ease-in-out opacity-80" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-bold text-[10px] mt-1">Find</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 0;">add_circle</span>
+<span class="font-label-bold text-[10px] mt-1">Offer</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 0;">history</span>
+<span class="font-label-bold text-[10px] mt-1">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-bold text-[10px] mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

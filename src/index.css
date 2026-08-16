@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    -webkit-tap-highlight-color: transparent;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+.hero-pattern {
+  background-color: #f8f9ff;
+  background-image: radial-gradient(#d3e4fe 1px, transparent 1px);
+  background-size: 20px 20px;
+}

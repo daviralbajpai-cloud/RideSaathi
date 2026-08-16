@@ -1,0 +1,309 @@
+﻿<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Offer a Ride - RideSaathi</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#2563eb",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "surface-container-high": "#dce9ff",
+                      "surface-tint": "#0053db",
+                      "on-surface-variant": "#434655",
+                      "on-secondary-fixed": "#002114",
+                      "on-tertiary-fixed": "#2a1700",
+                      "outline-variant": "#c3c6d7",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#005137",
+                      "secondary-fixed-dim": "#68dba9",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "on-secondary-container": "#00714e",
+                      "surface-dim": "#cbdbf5",
+                      "tertiary-container": "#996100",
+                      "surface-bright": "#f8f9ff",
+                      "background": "#f8f9ff",
+                      "primary-fixed": "#dbe1ff",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed": "#00174b",
+                      "on-secondary": "#ffffff",
+                      "on-surface": "#0b1c30",
+                      "surface-container-low": "#eff4ff",
+                      "surface-variant": "#d3e4fe",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "secondary": "#006c4a",
+                      "secondary-fixed": "#85f8c4",
+                      "secondary-container": "#82f5c1",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-tertiary-container": "#ffeedd",
+                      "on-error-container": "#93000a",
+                      "inverse-primary": "#b4c5ff",
+                      "surface": "#f8f9ff",
+                      "surface-container": "#e5eeff",
+                      "outline": "#737686",
+                      "on-background": "#0b1c30",
+                      "tertiary-fixed": "#ffddb8",
+                      "on-primary-container": "#eeefff",
+                      "tertiary": "#784b00",
+                      "primary": "#004ac6",
+                      "inverse-surface": "#213145",
+                      "inverse-on-surface": "#eaf1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "16px",
+                      "gutter": "12px",
+                      "xs": "8px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "md": "16px",
+                      "sm": "12px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-bold": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-lg min-h-screen flex flex-col antialiased pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim docked full-width top-0 z-40 sticky">
+<div class="flex justify-between items-center px-container-margin h-16 w-full max-w-[600px] mx-auto flat no shadows">
+<button aria-label="Menu" class="text-primary dark:text-primary-fixed-dim hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">RideSaathi</h1>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-[600px] mx-auto px-container-margin pt-sm pb-xl">
+<div class="mb-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-xs">Offer a Ride</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Share your journey and save costs.</p>
+</div>
+<!-- Form Canvas -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-md flex flex-col gap-md border border-surface-container-low">
+<!-- Route Section -->
+<div class="relative flex flex-col gap-sm">
+<!-- Vertical connecting line -->
+<div class="absolute left-6 top-10 bottom-10 w-0.5 bg-outline-variant z-0"></div>
+<!-- Starting Point -->
+<div class="relative z-10 flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">my_location</span>
+</div>
+<div class="flex-1">
+<label class="sr-only" for="start-location">Starting point</label>
+<input class="w-full h-[52px] px-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary-container/30 transition-all font-body-lg text-on-surface placeholder:text-outline outline-none" id="start-location" placeholder="Leaving from..." type="text"/>
+</div>
+</div>
+<!-- Destination -->
+<div class="relative z-10 flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary">location_on</span>
+</div>
+<div class="flex-1">
+<label class="sr-only" for="destination">Destination</label>
+<input class="w-full h-[52px] px-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary-container/30 transition-all font-body-lg text-on-surface placeholder:text-outline outline-none" id="destination" placeholder="Going to..." type="text"/>
+</div>
+</div>
+</div>
+<hr class="border-t border-outline-variant my-sm"/>
+<!-- Date & Time -->
+<div class="grid grid-cols-2 gap-sm">
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-xs block" for="date">Date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">calendar_today</span>
+<input class="w-full h-[52px] pl-[44px] pr-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary-container/30 transition-all font-body-lg text-on-surface outline-none appearance-none" id="date" type="date"/>
+</div>
+</div>
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-xs block" for="time">Time</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-outline">schedule</span>
+<input class="w-full h-[52px] pl-[44px] pr-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary-container/30 transition-all font-body-lg text-on-surface outline-none appearance-none" id="time" type="time"/>
+</div>
+</div>
+</div>
+<!-- Seats -->
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-xs block">Available Seats</label>
+<div class="flex items-center justify-between border border-outline-variant rounded-lg p-sm bg-surface-container-lowest">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline">airline_seat_recline_normal</span>
+<span class="font-body-lg text-on-surface" id="seat-count">3</span>
+</div>
+<div class="flex gap-xs">
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors active:scale-95" onclick="document.getElementById('seat-count').innerText = Math.max(1, parseInt(document.getElementById('seat-count').innerText) - 1)" type="button">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors active:scale-95" onclick="document.getElementById('seat-count').innerText = Math.min(6, parseInt(document.getElementById('seat-count').innerText) + 1)" type="button">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notes -->
+<div>
+<label class="font-label-bold text-label-bold text-on-surface-variant mb-xs block" for="notes">Optional Notes</label>
+<textarea class="w-full p-sm rounded-lg border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary-container/30 transition-all font-body-sm text-on-surface placeholder:text-outline outline-none resize-none" id="notes" placeholder="e.g., No smoking, luggage space available..." rows="3"></textarea>
+</div>
+<!-- Preferences Chips -->
+<div class="flex flex-wrap gap-xs mt-xs">
+<button class="h-[28px] px-3 bg-surface-container rounded-full font-label-bold text-[12px] text-on-surface-variant hover:bg-surface-container-high transition-colors border border-transparent focus:border-primary focus:bg-primary-container focus:text-on-primary">AC</button>
+<button class="h-[28px] px-3 bg-surface-container rounded-full font-label-bold text-[12px] text-on-surface-variant hover:bg-surface-container-high transition-colors border border-transparent focus:border-primary focus:bg-primary-container focus:text-on-primary">No Smoking</button>
+<button class="h-[28px] px-3 bg-surface-container rounded-full font-label-bold text-[12px] text-on-surface-variant hover:bg-surface-container-high transition-colors border border-transparent focus:border-primary focus:bg-primary-container focus:text-on-primary">Music</button>
+<button class="h-[28px] px-3 bg-surface-container rounded-full font-label-bold text-[12px] text-on-surface-variant hover:bg-surface-container-high transition-colors border border-transparent focus:border-primary focus:bg-primary-container focus:text-on-primary">Women Only</button>
+</div>
+</div>
+</main>
+<!-- Sticky Bottom CTA -->
+<div class="fixed bottom-[88px] left-0 right-0 w-full z-30 px-container-margin md:hidden max-w-[600px] mx-auto">
+<button class="w-full h-[52px] bg-primary text-on-primary rounded-[16px] font-headline-md text-headline-md shadow-[0_4px_12px_rgba(0,0,0,0.2)] hover:bg-surface-tint transition-colors active:scale-95 flex items-center justify-center gap-xs">
+<span>Offer Ride</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</button>
+</div>
+<!-- Desktop CTA (Visible only on md+) -->
+<div class="hidden md:flex justify-end max-w-[600px] mx-auto px-container-margin mt-lg pb-xl">
+<button class="h-[52px] px-xl bg-primary text-on-primary rounded-[16px] font-headline-md text-headline-md shadow-[0_4px_12px_rgba(0,0,0,0.2)] hover:bg-surface-tint transition-colors active:scale-95 flex items-center justify-center gap-xs">
+<span>Offer Ride</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">directions_car</span>
+</button>
+</div>
+<!-- BottomNavBar -->
+<nav class="md:hidden bg-surface-container-lowest dark:bg-inverse-surface docked full-width bottom-0 rounded-t-xl shadow-lg dark:shadow-none border-t border-outline-variant dark:border-none shadow-[0_-4px_12px_rgba(0,0,0,0.1)] fixed bottom-0 left-0 right-0 w-full z-50 flex justify-around items-center px-4 pb-4 pt-2 max-w-[600px] mx-auto">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim group transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">home</span>
+<span class="font-label-bold text-label-bold-mobile mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim group transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">search</span>
+<span class="font-label-bold text-label-bold-mobile mt-1">Find</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim bg-surface-container-high dark:bg-surface-tint/20 rounded-xl px-3 py-1 active:scale-90 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="font-label-bold text-label-bold-mobile mt-1">Offer</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim group transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">history</span>
+<span class="font-label-bold text-label-bold-mobile mt-1">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1 hover:text-primary dark:hover:text-primary-fixed-dim group transition-colors" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">person</span>
+<span class="font-label-bold text-label-bold-mobile mt-1">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple script to toggle active state on chips for visual feedback
+        document.querySelectorAll('button:not([type="button"]):not(.bg-primary)').forEach(chip => {
+            if(chip.closest('.flex-wrap')) {
+                chip.addEventListener('click', function() {
+                    this.classList.toggle('bg-primary-container');
+                    this.classList.toggle('text-on-primary');
+                    this.classList.toggle('bg-surface-container');
+                    this.classList.toggle('text-on-surface-variant');
+                });
+            }
+        });
+    </script>
+</body></html>
