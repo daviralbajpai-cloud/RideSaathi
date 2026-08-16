@@ -223,6 +223,166 @@ $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 
 -- ====================================================================
+-- SEND RIDE REQUEST RPC FUNCTION
+-- ====================================================================
+CREATE OR REPLACE FUNCTION public.send_ride_request(
+  p_ride_id UUID,
+  p_seats_requested INT DEFAULT 1
+)
+RETURNS JSON AS $$
+DECLARE
+  v_offered_by UUID;
+  v_available_seats INT;
+  v_from_loc TEXT;
+  v_to_loc TEXT;
+  v_request_id UUID;
+  v_caller_id UUID;
+  v_existing_pending_id UUID;
+BEGIN
+  -- 1. Derive authenticated caller from Supabase session (Never trust client UUID)
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Unauthenticated user session');
+  END IF;
+
+  -- 2. Validate p_seats_requested range (1 to 5)
+  IF p_seats_requested IS NULL OR p_seats_requested < 1 OR p_seats_requested > 5 THEN
+    RETURN json_build_object('success', false, 'message', 'Requested seats must be between 1 and 5');
+  END IF;
+
+  -- 3. Lock active ride FOR UPDATE and verify existence & available seats
+  SELECT offered_by, available_seats, from_location, to_location
+  INTO v_offered_by, v_available_seats, v_from_loc, v_to_loc
+  FROM public.rides
+  WHERE id = p_ride_id AND status = 'active'
+  FOR UPDATE;
+
+  IF v_offered_by IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Target ride not found or not active');
+  END IF;
+
+  -- 4. Verify caller is not the ride owner
+  IF v_caller_id = v_offered_by THEN
+    RETURN json_build_object('success', false, 'message', 'You cannot request to join your own ride');
+  END IF;
+
+  -- 5. Prevent duplicate pending requests from same user for same ride
+  SELECT id INTO v_existing_pending_id
+  FROM public.ride_requests
+  WHERE ride_id = p_ride_id AND requested_by = v_caller_id AND status = 'pending'
+  LIMIT 1;
+
+  IF v_existing_pending_id IS NOT NULL THEN
+    RETURN json_build_object('success', false, 'message', 'You already have a pending request for this ride');
+  END IF;
+
+  -- 6. Check seat availability
+  IF v_available_seats < p_seats_requested THEN
+    RETURN json_build_object('success', false, 'message', 'Not enough available seats left for this ride');
+  END IF;
+
+  -- 7. Insert ride request atomically
+  INSERT INTO public.ride_requests (ride_id, requested_by, seats_requested, status)
+  VALUES (p_ride_id, v_caller_id, p_seats_requested, 'pending')
+  RETURNING id INTO v_request_id;
+
+  -- 8. Create Notification 1 for Requester (v_caller_id)
+  INSERT INTO public.notifications (user_id, title, message, type, is_read)
+  VALUES (
+    v_caller_id,
+    'Ride Request Sent',
+    'Your request to join the ride from ' || v_from_loc || ' to ' || v_to_loc || ' was sent.',
+    'info',
+    false
+  );
+
+  -- 9. Create Notification 2 for Ride Owner (v_offered_by)
+  INSERT INTO public.notifications (user_id, title, message, type, is_read)
+  VALUES (
+    v_offered_by,
+    'New Ride Request',
+    'A person has requested to join your ride from ' || v_from_loc || ' to ' || v_to_loc || '.',
+    'request',
+    false
+  );
+
+  RETURN json_build_object(
+    'success', true,
+    'request_id', v_request_id,
+    'message', 'Ride request sent successfully'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+
+-- ====================================================================
+-- DECLINE RIDE REQUEST RPC FUNCTION
+-- ====================================================================
+CREATE OR REPLACE FUNCTION public.decline_ride_request(
+  p_request_id UUID
+)
+RETURNS JSON AS $$
+DECLARE
+  v_ride_id UUID;
+  v_requester_id UUID;
+  v_offered_by UUID;
+  v_from_loc TEXT;
+  v_to_loc TEXT;
+  v_caller_id UUID;
+BEGIN
+  -- 1. Derive authenticated caller from session
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Unauthenticated user session');
+  END IF;
+
+  -- 2. Fetch pending request details and lock row FOR UPDATE
+  SELECT ride_id, requested_by
+  INTO v_ride_id, v_requester_id
+  FROM public.ride_requests
+  WHERE id = p_request_id AND status = 'pending'
+  FOR UPDATE;
+
+  IF v_ride_id IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Pending request not found');
+  END IF;
+
+  -- 3. Lock associated ride and fetch ride owner details
+  SELECT offered_by, from_location, to_location
+  INTO v_offered_by, v_from_loc, v_to_loc
+  FROM public.rides
+  WHERE id = v_ride_id;
+
+  IF v_offered_by IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Associated ride not found');
+  END IF;
+
+  -- 4. HARDENED AUTHORIZATION CHECK: Caller must be true ride owner (or platform admin)
+  IF v_caller_id != v_offered_by AND NOT public.is_admin_user() THEN
+    RETURN json_build_object('success', false, 'message', 'Unauthorized: Only the ride offerer can decline requests');
+  END IF;
+
+  -- 5. Update request status to declined atomically
+  UPDATE public.ride_requests
+  SET status = 'declined', updated_at = NOW()
+  WHERE id = p_request_id;
+
+  -- 6. Insert decline notification for requester (v_requester_id)
+  INSERT INTO public.notifications (user_id, title, message, type, is_read)
+  VALUES (
+    v_requester_id,
+    'Ride Request Declined',
+    'Your request to join the ride from ' || v_from_loc || ' to ' || v_to_loc || ' was declined.',
+    'warning',
+    false
+  );
+
+  RETURN json_build_object('success', true, 'message', 'Ride request declined successfully');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+
+-- ====================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ====================================================================
 
@@ -308,9 +468,12 @@ CREATE POLICY "Users can update their own notification read status"
   ON public.notifications FOR UPDATE
   USING (auth.uid() = user_id);
 
-CREATE POLICY "System/Users can insert notifications"
+DROP POLICY IF EXISTS "System/Users can insert notifications"
+ON public.notifications;
+
+CREATE POLICY "Users can insert their own notifications"
   ON public.notifications FOR INSERT
-  WITH CHECK (auth.role() = 'authenticated');
+  WITH CHECK (auth.uid() = user_id);
 
 -- --------------------------------------------------------------------
 -- RECURRING_RIDES POLICIES

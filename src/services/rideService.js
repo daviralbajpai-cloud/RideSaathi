@@ -133,18 +133,10 @@ export const rideService = {
     };
   },
 
-  // Send a booking request
+  // Send a booking request via RPC function
   sendRideRequest: async ({ rideId, requestedBy, seatsRequested }) => {
     if (!isSupabaseConfigured()) {
       return { data: null, error: new Error('Supabase credentials are not configured in .env') };
-    }
-
-    // Retrieve active authenticated user from Supabase session to ensure auth.uid() === requested_by
-    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !authUser) {
-      console.error('RideSaathi Auth Error: No authenticated Supabase session found for ride request.', authError);
-      return { data: null, error: authError || new Error('You must be signed in to request a ride.') };
     }
 
     if (!rideId) {
@@ -152,87 +144,23 @@ export const rideService = {
       return { data: null, error: new Error('Invalid ride selected.') };
     }
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rideId);
-    if (!isUuid) {
-      console.error('RideSaathi Error: Invalid ride_id syntax. Must be a real Supabase database UUID, received:', rideId);
-      return {
-        data: null,
-        error: new Error(`Invalid ride ID "${rideId}". Please select a real ride offer from live listings.`)
-      };
-    }
-
-    const payload = {
-      ride_id: rideId,
-      requested_by: authUser.id,
-      seats_requested: Number(seatsRequested) || 1,
-      status: 'pending'
-    };
-
-    console.log("Ride request payload:", {
-      ride_id: payload.ride_id,
-      requested_by: payload.requested_by,
-      seats_requested: payload.seats_requested
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc('send_ride_request', {
+      p_ride_id: rideId,
+      p_seats_requested: Number(seatsRequested) || 1
     });
 
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .insert(payload)
-      .select()
-      .single();
+    console.log("SEND RIDE REQUEST RPC RESULT:", rpcRes);
+    console.log("SEND RIDE REQUEST RPC ERROR:", rpcErr);
 
-    // Fetch target ride details to identify the ride offerer (Account A)
-    const { data: targetRide, error: rideError } = await supabase
-      .from('rides')
-      .select('id, offered_by, from_location, to_location')
-      .eq('id', rideId)
-      .single();
-
-    console.log("=== RIDE REQUEST CREATED ===");
-    console.log("REQUEST DATA:", data);
-    console.log("REQUEST ERROR:", error);
-    console.log("AUTH USER:", authUser?.id);
-    console.log("TARGET RIDE:", targetRide);
-    console.log("TARGET RIDE ERROR:", rideError);
-    console.log("TARGET RIDE OFFERER:", targetRide?.offered_by);
-
-    if (error) {
-      console.error('Supabase INSERT into public.ride_requests failed:', error);
-    } else {
-      const fromLoc = targetRide?.from_location || 'origin';
-      const toLoc = targetRide?.to_location || 'destination';
-
-      // NOTIFICATION 1: For Requester (Account B)
-      const { data: requesterNotification, error: requesterNotificationError } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: authUser.id,
-          title: 'Ride Request Sent',
-          message: `Your request to join the ride from ${fromLoc} to ${toLoc} was sent.`,
-          type: 'info',
-          is_read: false
-        });
-
-      console.log("REQUESTER NOTIFICATION RESULT:", requesterNotification);
-      console.log("REQUESTER NOTIFICATION ERROR:", requesterNotificationError);
-
-      // NOTIFICATION 2: For Ride Offerer (Account A)
-      if (targetRide && targetRide.offered_by && targetRide.offered_by !== authUser.id) {
-        const { data: offererNotification, error: offererNotificationError } = await supabase
-          .from('notifications')
-          .insert({
-            user_id: targetRide.offered_by,
-            title: 'New Ride Request',
-            message: `A person has requested to join your ride from ${fromLoc} to ${toLoc}.`,
-            type: 'request',
-            is_read: false
-          });
-
-        console.log("OFFERER NOTIFICATION RESULT:", offererNotification);
-        console.log("OFFERER NOTIFICATION ERROR:", offererNotificationError);
-      }
+    if (rpcErr) {
+      return { data: null, error: rpcErr };
     }
 
-    return { data, error };
+    if (rpcRes && !rpcRes.success) {
+      return { data: null, error: new Error(rpcRes.message || 'Failed to send ride request') };
+    }
+
+    return { data: rpcRes, error: null };
   },
 
   // Securely accept ride request using PostgreSQL RPC function or direct fallback update
@@ -327,54 +255,33 @@ export const rideService = {
     return { data: { success: true, message: "Ride request accepted successfully" }, error: null };
   },
 
-  // Decline a ride request
+  // Decline a ride request via RPC function
   declineRideRequest: async (requestId) => {
     if (!isSupabaseConfigured()) return { data: null, error: null };
 
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    const currentUserId = authUser?.id;
-
     console.log("DECLINE REQUEST ID:", requestId);
-    console.log("CURRENT USER ID:", currentUserId);
 
-    if (!requestId || !currentUserId) {
-      console.error("DECLINE ERROR: Missing requestId or currentUserId", { requestId, currentUserId });
-      return { data: null, error: new Error("Invalid request or unauthenticated user") };
+    if (!requestId) {
+      console.error("DECLINE ERROR: Missing requestId", { requestId });
+      return { data: null, error: new Error("Invalid request ID") };
     }
 
-    const { data, error } = await supabase
-      .from('ride_requests')
-      .update({ status: 'declined', updated_at: new Date().toISOString() })
-      .eq('id', requestId)
-      .select()
-      .single();
+    const { data: rpcRes, error: rpcErr } = await supabase.rpc('decline_ride_request', {
+      p_request_id: requestId
+    });
 
-    console.log("DECLINE RESULT:", data);
-    if (error) console.error("DECLINE ERROR:", error);
+    console.log("DECLINE RIDE REQUEST RPC RESULT:", rpcRes);
+    console.log("DECLINE RIDE REQUEST RPC ERROR:", rpcErr);
 
-    // Create decline notification for the requester (Account B)
-    if (data && data.requested_by) {
-      const { data: targetRide } = await supabase
-        .from('rides')
-        .select('from_location, to_location')
-        .eq('id', data.ride_id)
-        .maybeSingle();
-
-      const fromLoc = targetRide?.from_location || 'origin';
-      const toLoc = targetRide?.to_location || 'destination';
-
-      await supabase
-        .from('notifications')
-        .insert({
-          user_id: data.requested_by,
-          title: 'Ride Request Declined',
-          message: `Your request to join the ride from ${fromLoc} to ${toLoc} was declined.`,
-          type: 'warning',
-          is_read: false
-        });
+    if (rpcErr) {
+      return { data: null, error: rpcErr };
     }
 
-    return { data, error };
+    if (rpcRes && !rpcRes.success) {
+      return { data: null, error: new Error(rpcRes.message || 'Failed to decline ride request') };
+    }
+
+    return { data: rpcRes, error: null };
   },
 
   // Fetch activity journeys categorized into tabs
