@@ -161,17 +161,16 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Unauthenticated user session');
   END IF;
 
-  -- 2. Fetch request details and verify status = 'pending'
-  SELECT ride_id, requested_by, seats_requested
-  INTO v_ride_id, v_requester_id, v_seats_requested
+  -- 2. Obtain target ride_id for p_request_id WITHOUT FOR UPDATE
+  SELECT ride_id INTO v_ride_id
   FROM public.ride_requests
-  WHERE id = p_request_id AND status = 'pending';
+  WHERE id = p_request_id;
 
   IF v_ride_id IS NULL THEN
     RETURN json_build_object('success', false, 'message', 'Pending request not found');
   END IF;
 
-  -- 3. Lock active ride row FOR UPDATE and obtain true ride owner
+  -- 3. Lock active ride row FIRST (FOR UPDATE) to maintain consistent RIDE -> RIDE_REQUEST lock hierarchy
   SELECT offered_by, available_seats, from_location, to_location
   INTO v_offered_by, v_available_seats, v_from_loc, v_to_loc
   FROM public.rides
@@ -182,13 +181,24 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Ride not found or not active');
   END IF;
 
-  -- 4. HARDENED AUTHORIZATION CHECK: Caller must be true ride owner (or platform admin)
+  -- 4. Lock ride_request row SECOND (FOR UPDATE) and verify status = 'pending'
+  SELECT requested_by, seats_requested
+  INTO v_requester_id, v_seats_requested
+  FROM public.ride_requests
+  WHERE id = p_request_id AND status = 'pending'
+  FOR UPDATE;
+
+  IF v_requester_id IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Pending request not found');
+  END IF;
+
+  -- 5. HARDENED AUTHORIZATION CHECK: Caller must be true ride owner (or platform admin)
   -- Note: Client-supplied p_offered_by is completely ignored for security.
   IF v_caller_id != v_offered_by AND NOT public.is_admin_user() THEN
     RETURN json_build_object('success', false, 'message', 'Unauthorized: Only the ride offerer can accept requests');
   END IF;
 
-  -- 5. Check seat availability
+  -- 6. Check seat availability
   IF v_available_seats < v_seats_requested THEN
     -- Insufficient seats: Decline the request automatically
     UPDATE public.ride_requests
@@ -198,7 +208,7 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Not enough available seats left');
   END IF;
 
-  -- 6. Sufficient seats: Update request status and decrement available seats
+  -- 7. Sufficient seats: Update request status and decrement available seats
   UPDATE public.ride_requests
   SET status = 'accepted', updated_at = NOW()
   WHERE id = p_request_id;
@@ -207,7 +217,7 @@ BEGIN
   SET available_seats = available_seats - v_seats_requested
   WHERE id = v_ride_id;
 
-  -- 7. Create notification for the requester
+  -- 8. Create notification for the requester
   INSERT INTO public.notifications (user_id, title, message, type, is_read)
   VALUES (
     v_requester_id,
@@ -336,38 +346,47 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Unauthenticated user session');
   END IF;
 
-  -- 2. Fetch pending request details and lock row FOR UPDATE
-  SELECT ride_id, requested_by
-  INTO v_ride_id, v_requester_id
+  -- 2. Obtain target ride_id for p_request_id WITHOUT FOR UPDATE
+  SELECT ride_id INTO v_ride_id
   FROM public.ride_requests
-  WHERE id = p_request_id AND status = 'pending'
-  FOR UPDATE;
+  WHERE id = p_request_id;
 
   IF v_ride_id IS NULL THEN
     RETURN json_build_object('success', false, 'message', 'Pending request not found');
   END IF;
 
-  -- 3. Lock associated ride and fetch ride owner details
+  -- 3. Lock active ride row FIRST (FOR UPDATE) to maintain consistent RIDE -> RIDE_REQUEST lock hierarchy
   SELECT offered_by, from_location, to_location
   INTO v_offered_by, v_from_loc, v_to_loc
   FROM public.rides
-  WHERE id = v_ride_id;
+  WHERE id = v_ride_id AND status = 'active'
+  FOR UPDATE;
 
   IF v_offered_by IS NULL THEN
     RETURN json_build_object('success', false, 'message', 'Associated ride not found');
   END IF;
 
-  -- 4. HARDENED AUTHORIZATION CHECK: Caller must be true ride owner (or platform admin)
+  -- 4. Lock pending ride_request SECOND (FOR UPDATE) and verify status = 'pending'
+  SELECT requested_by INTO v_requester_id
+  FROM public.ride_requests
+  WHERE id = p_request_id AND status = 'pending'
+  FOR UPDATE;
+
+  IF v_requester_id IS NULL THEN
+    RETURN json_build_object('success', false, 'message', 'Pending request not found');
+  END IF;
+
+  -- 5. HARDENED AUTHORIZATION CHECK: Caller must be true ride owner (or platform admin)
   IF v_caller_id != v_offered_by AND NOT public.is_admin_user() THEN
     RETURN json_build_object('success', false, 'message', 'Unauthorized: Only the ride offerer can decline requests');
   END IF;
 
-  -- 5. Update request status to declined atomically
+  -- 6. Update request status to declined atomically
   UPDATE public.ride_requests
   SET status = 'declined', updated_at = NOW()
   WHERE id = p_request_id;
 
-  -- 6. Insert decline notification for requester (v_requester_id)
+  -- 7. Insert decline notification for requester (v_requester_id)
   INSERT INTO public.notifications (user_id, title, message, type, is_read)
   VALUES (
     v_requester_id,
