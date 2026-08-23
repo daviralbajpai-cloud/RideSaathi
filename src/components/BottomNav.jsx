@@ -16,11 +16,11 @@ export const BottomNav = () => {
 
   // Count active requests (pending requests received or accepted requests needing attention)
   const pendingRequestsCount = (activity?.requests || []).filter(
-    r => (r.status?.toLowerCase().includes('pending')) && !isRideExpired(r.date, r.time)
+    r => r.status?.toLowerCase().includes('pending')
   ).length;
 
   const upcomingAcceptedCount = (activity?.upcoming || []).filter(
-    r => (r.status?.toLowerCase().includes('accept') || r.status?.toLowerCase().includes('confirm')) && !isRideExpired(r.date, r.time)
+    r => r.status?.toLowerCase().includes('accept') || r.status?.toLowerCase().includes('confirm')
   ).length;
 
   // Total active request/acceptance count for Activity badge

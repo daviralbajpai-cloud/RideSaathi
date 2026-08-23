@@ -510,7 +510,7 @@ export const rideService = {
     const cancelledRides = [];
 
     (rides || [])
-      .filter(r => r.offered_by === currentUserId)
+      .filter(r => String(r.offered_by).toLowerCase() === String(currentUserId).toLowerCase())
       .forEach(r => {
         const isExpired = isRideExpired(r.ride_date, r.departure_time);
         const item = {

@@ -9,8 +9,8 @@ export const HomePage = () => {
   const navigate = useNavigate();
   const { user, rides, activity } = useApp();
 
-  const featuredRides = rides.filter(r => !isRideExpired(r.date, r.departureTime)).slice(0, 2);
-  const upcomingJourneys = (activity.upcoming || []).filter(item => !isRideExpired(item.date, item.time));
+  const featuredRides = rides.slice(0, 2);
+  const upcomingJourneys = activity.upcoming || [];
 
   return (
     <div className="w-full flex-1 flex flex-col">

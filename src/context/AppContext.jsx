@@ -327,6 +327,8 @@ export const AppProvider = ({ children }) => {
       if (data) {
         const formatted = {
           id: data.id,
+          offeredBy: data.offered_by,
+          offered_by: data.offered_by,
           personName: user.name || 'User',
           personPhoto: user.photo,
           from: data.from_location,

@@ -58,41 +58,16 @@ export const ActivityPage = () => {
     { key: 'cancelled', label: 'Cancelled' },
   ];
 
-  // Defensive display-layer filtering to guarantee expired rides never appear in active tabs
+  // Display items directly from categorized activity state
   const getDisplayItems = () => {
-    const rawItems = activity[activeTab] || [];
-
-    if (activeTab === 'upcoming') {
-      // Exclude expired upcoming rides or pending requests
-      return rawItems.filter(item => !isRideExpired(item.date, item.time));
-    }
-
-    if (activeTab === 'requests') {
-      // Exclude pending requests for expired rides
-      return rawItems.filter(item => !isRideExpired(item.date, item.time));
-    }
-
-    if (activeTab === 'offered') {
-      // Exclude expired offered rides
-      return rawItems.filter(item => !isRideExpired(item.date, item.time));
-    }
-
-    if (activeTab === 'completed') {
-      return rawItems;
-    }
-
-    if (activeTab === 'cancelled') {
-      return rawItems;
-    }
-
-    return rawItems;
+    return activity[activeTab] || [];
   };
 
-  const upcomingCount = (activity.upcoming || []).filter(item => !isRideExpired(item.date, item.time)).length;
-  const requestsCount = (activity.requests || []).filter(item => !isRideExpired(item.date, item.time)).length;
-  const offeredCount = (activity.offered || []).filter(item => !isRideExpired(item.date, item.time)).length;
-  const completedCount = (activity.completed || []).length;
-  const cancelledCount = (activity.cancelled || []).length;
+  const upcomingCount = (activity?.upcoming || []).length;
+  const requestsCount = (activity?.requests || []).length;
+  const offeredCount = (activity?.offered || []).length;
+  const completedCount = (activity?.completed || []).length;
+  const cancelledCount = (activity?.cancelled || []).length;
 
   const tabCounts = {
     upcoming: upcomingCount,

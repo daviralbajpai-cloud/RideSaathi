@@ -9,10 +9,8 @@ export const AvailableRidesPage = () => {
   const navigate = useNavigate();
   const { searchResults, searchCriteria, rides } = useApp();
 
-  // If search results exist, use them. Otherwise fallback to all initial rides.
-  // Defense-in-depth: filter out any expired rides from active search results.
-  const rawRides = searchResults.length > 0 ? searchResults : rides;
-  const displayRides = rawRides.filter(r => !isRideExpired(r.date, r.departureTime));
+  // If search results exist, use them. Otherwise fallback to all available rides.
+  const displayRides = searchResults.length > 0 ? searchResults : rides;
 
   return (
     <div className="w-full flex-1 flex flex-col">
