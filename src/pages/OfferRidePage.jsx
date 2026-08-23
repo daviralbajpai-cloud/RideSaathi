@@ -78,7 +78,7 @@ export const OfferRidePage = () => {
       return;
     }
 
-    navigate('/activity');
+    navigate('/activity', { state: { tab: 'offered' } });
   };
 
   const handleSubmit = async (e) => {

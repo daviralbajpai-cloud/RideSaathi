@@ -18,18 +18,27 @@ export const rideService = {
     }
 
     // Security Check: Verify user has a valid 10-digit phone number in their database profile
-    const { data: profile } = await supabase
+    let { data: profile } = await supabase
       .from('profiles')
       .select('phone')
       .eq('id', authUser.id)
       .maybeSingle();
 
-    const phoneValidation = validatePhoneNumber(profile?.phone);
+    const candidatePhone = profile?.phone || authUser.user_metadata?.phone || rideData.phone;
+    const phoneValidation = validatePhoneNumber(candidatePhone);
     if (!phoneValidation.isValid) {
       return {
         data: null,
         error: new Error('A valid 10-digit phone number is required before offering a ride. Please add your phone number in your Profile.')
       };
+    }
+
+    // Ensure database profile has the validated phone saved to satisfy RLS check
+    if (!profile?.phone || profile.phone.trim() === '') {
+      await supabase
+        .from('profiles')
+        .update({ phone: phoneValidation.formatted })
+        .eq('id', authUser.id);
     }
 
     const fromLabel = typeof rideData.from === 'object' ? rideData.from.label : rideData.from;
@@ -91,27 +100,24 @@ export const rideService = {
   searchRides: async ({ from, to, date, totalSeats }) => {
     if (!isSupabaseConfigured()) return { data: null, error: null };
 
-    const { data: authUserData } = await supabase.auth.getUser();
-    console.log('AUTH USER:', authUserData?.user?.id);
-
     // Extract core place terms for flexible matching
-    const extractSearchTerm = (loc) => {
-      if (!loc) return '';
+    const extractTokens = (loc) => {
+      if (!loc) return [];
+      let str = '';
       if (typeof loc === 'object') {
-        return loc.name || (loc.label ? loc.label.split(',')[0].trim() : '');
+        str = (loc.name || loc.label || '');
+      } else {
+        str = String(loc);
       }
-      return typeof loc === 'string' ? loc.split(',')[0].trim() : '';
+      return str
+        .toLowerCase()
+        .replace(/[,.-]/g, ' ')
+        .split(/\s+/)
+        .filter(t => t.length > 2);
     };
 
-    const fromTerm = extractSearchTerm(from);
-    const toTerm = extractSearchTerm(to);
-
-    console.log({
-      fromTerm,
-      toTerm,
-      rideDate: date,
-      seatsNeeded: totalSeats
-    });
+    const fromTokens = extractTokens(from);
+    const toTokens = extractTokens(to);
 
     let query = supabase
       .from('rides')
@@ -121,16 +127,6 @@ export const rideService = {
 
     if (date && typeof date === 'string' && date.trim()) {
       query = query.gte('ride_date', date.trim());
-    } else {
-      const todayIST = getTodayDateIST();
-      query = query.gte('ride_date', todayIST);
-    }
-
-    if (fromTerm) {
-      query = query.ilike('from_location', `%${fromTerm}%`);
-    }
-    if (toTerm) {
-      query = query.ilike('to_location', `%${toTerm}%`);
     }
 
     let { data: rides, error } = await query.order('created_at', { ascending: false });
@@ -141,10 +137,23 @@ export const rideService = {
     }
 
     // Defense-in-depth: Filter out any rides whose departure time has passed
-    const unexpiredRides = rides.filter(ride => !isRideExpired(ride.ride_date, ride.departure_time));
+    let matchingRides = rides.filter(ride => !isRideExpired(ride.ride_date, ride.departure_time));
+
+    // Flexible location matching if criteria were supplied
+    if (fromTokens.length > 0 || toTokens.length > 0) {
+      matchingRides = matchingRides.filter(ride => {
+        const rideFrom = (ride.from_location || '').toLowerCase();
+        const rideTo = (ride.to_location || '').toLowerCase();
+
+        const matchFrom = fromTokens.length === 0 || fromTokens.some(token => rideFrom.includes(token));
+        const matchTo = toTokens.length === 0 || toTokens.some(token => rideTo.includes(token));
+
+        return matchFrom && matchTo;
+      });
+    }
 
     // Collect unique offered_by UUIDs
-    const offererIds = [...new Set(unexpiredRides.map(r => r.offered_by).filter(Boolean))];
+    const offererIds = [...new Set(matchingRides.map(r => r.offered_by).filter(Boolean))];
 
     // Fetch public profile information (id, name, photo_url)
     let publicProfiles = [];
@@ -157,7 +166,7 @@ export const rideService = {
     }
 
     // Merge public profile into each ride as offered_by_profile
-    const mergedRides = unexpiredRides.map(ride => {
+    const mergedRides = matchingRides.map(ride => {
       const profile = publicProfiles.find(p => p.id === ride.offered_by);
       return {
         ...ride,
