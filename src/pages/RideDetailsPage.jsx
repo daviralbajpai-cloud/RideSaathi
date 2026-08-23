@@ -8,10 +8,17 @@ import { isSupabaseConfigured } from '../lib/supabaseClient';
 export const RideDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getRideById, searchCriteria } = useApp();
+  const { getRideById, searchCriteria, user } = useApp();
 
   const [ride, setRide] = useState(() => getRideById(id));
   const [loading, setLoading] = useState(!ride);
+
+  const isOwnRide = Boolean(
+    user?.isAuthenticated && (
+      (user?.id && (ride?.offeredBy === user.id || ride?.offered_by === user.id || ride?.offeredByProfile?.id === user.id)) ||
+      (user?.name && user.name.trim() !== '' && ride?.personName === user.name)
+    )
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -145,18 +152,33 @@ export const RideDetailsPage = () => {
           </div>
         </div>
 
-        {/* Booking Seat Request Summary */}
-        <div className="bg-primary/10 border border-primary/30 p-md rounded-2xl flex items-center justify-between">
-          <div>
-            <span className="font-label-bold text-label-bold text-primary font-bold block">
-              Booking for: {seatDescription}
-            </span>
-            <span className="font-body-sm text-[12px] text-on-surface-variant">
-              {totalSeatsNeeded} {totalSeatsNeeded === 1 ? 'seat' : 'seats'} needed
-            </span>
+        {/* Booking Seat Request Summary or Own Ride Notice */}
+        {isOwnRide ? (
+          <div className="bg-primary/10 border border-primary/30 p-md rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+              <span className="font-label-bold text-label-bold text-primary font-bold block flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-base">verified</span>
+                You Offered This Ride
+              </span>
+              <span className="font-body-sm text-[12px] text-on-surface-variant mt-0.5 block">
+                You cannot book your own ride offer. Passenger requests will appear in your Activity tab.
+              </span>
+            </div>
+            <span className="material-symbols-outlined text-primary text-2xl">directions_car</span>
           </div>
-          <span className="material-symbols-outlined text-primary text-2xl">event_seat</span>
-        </div>
+        ) : (
+          <div className="bg-primary/10 border border-primary/30 p-md rounded-2xl flex items-center justify-between shadow-sm">
+            <div>
+              <span className="font-label-bold text-label-bold text-primary font-bold block">
+                Booking for: {seatDescription}
+              </span>
+              <span className="font-body-sm text-[12px] text-on-surface-variant">
+                {totalSeatsNeeded} {totalSeatsNeeded === 1 ? 'seat' : 'seats'} needed
+              </span>
+            </div>
+            <span className="material-symbols-outlined text-primary text-2xl">event_seat</span>
+          </div>
+        )}
 
         {/* Optional Note & Preferences */}
         {ride.note && (
@@ -173,13 +195,23 @@ export const RideDetailsPage = () => {
 
       {/* Sticky Bottom CTA */}
       <div className="fixed bottom-16 left-0 right-0 w-full max-w-[600px] mx-auto px-container-margin py-3 z-40 bg-surface/90 backdrop-blur-md border-t border-outline-variant/30">
-        <button
-          onClick={() => navigate(`/ride-request/${ride.id}`)}
-          className="w-full min-h-[52px] bg-primary text-on-primary rounded-xl font-headline-md text-headline-md font-bold shadow-md hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
-        >
-          <span>Request to Join</span>
-          <span className="material-symbols-outlined text-2xl">arrow_forward</span>
-        </button>
+        {isOwnRide ? (
+          <button
+            onClick={() => navigate('/activity')}
+            className="w-full min-h-[52px] bg-secondary text-on-secondary rounded-xl font-headline-md text-headline-md font-bold shadow-md hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+          >
+            <span className="material-symbols-outlined text-2xl">history</span>
+            <span>Manage in Activity</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate(`/ride-request/${ride.id}`)}
+            className="w-full min-h-[52px] bg-primary text-on-primary rounded-xl font-headline-md text-headline-md font-bold shadow-md hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+          >
+            <span>Request to Join</span>
+            <span className="material-symbols-outlined text-2xl">arrow_forward</span>
+          </button>
+        )}
       </div>
     </div>
   );

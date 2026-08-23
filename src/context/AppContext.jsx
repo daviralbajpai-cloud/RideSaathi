@@ -55,6 +55,9 @@ export const AppProvider = ({ children }) => {
       if (!error && data) {
         const formatted = data.map(r => ({
           id: r.id,
+          offeredBy: r.offered_by,
+          offered_by: r.offered_by,
+          offeredByProfile: r.offered_by_profile,
           personName: r.offered_by_profile?.name || 'RideSaathi User',
           personPhoto:
             r.offered_by_profile?.photo_url || DEFAULT_AVATAR,
@@ -240,6 +243,9 @@ export const AppProvider = ({ children }) => {
       if (!error && data) {
         const formatted = data.map(r => ({
           id: r.id,
+          offeredBy: r.offered_by,
+          offered_by: r.offered_by,
+          offeredByProfile: r.offered_by_profile,
           personName:
             r.offered_by_profile?.name || 'RideSaathi User',
           personPhoto:
@@ -424,6 +430,19 @@ export const AppProvider = ({ children }) => {
     ride,
     requestedSeatsCount
   ) => {
+    // Defense: A user cannot book/request their own offered ride
+    const isOwnRide = Boolean(
+      (user?.id && (ride?.offeredBy === user.id || ride?.offered_by === user.id || ride?.offeredByProfile?.id === user.id)) ||
+      (user?.name && user.name.trim() !== '' && ride?.personName === user.name)
+    );
+
+    if (isOwnRide) {
+      return {
+        data: null,
+        error: new Error('You cannot request or book a ride that you offered.')
+      };
+    }
+
     const phoneVal = validatePhoneNumber(user?.phone);
     if (!phoneVal.isValid) {
       return {

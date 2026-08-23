@@ -1,11 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 
 export const RideCard = ({ ride }) => {
   const navigate = useNavigate();
+  const { user } = useApp();
+
+  const isOwnRide = Boolean(
+    user?.isAuthenticated && (
+      (user?.id && (ride.offeredBy === user.id || ride.offered_by === user.id || ride.offeredByProfile?.id === user.id)) ||
+      (user?.name && user.name.trim() !== '' && ride.personName === user.name)
+    )
+  );
 
   return (
-    <div className="w-full bg-surface-container-lowest rounded-2xl p-md shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-outline-variant/30 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <div className={`w-full bg-surface-container-lowest rounded-2xl p-md shadow-[0_4px_16px_rgba(0,0,0,0.06)] border flex flex-col gap-3 hover:shadow-md transition-shadow ${
+      isOwnRide ? 'border-primary/40 ring-1 ring-primary/20' : 'border-outline-variant/30'
+    }`}>
       {/* Header: Person offering the ride */}
       <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
         <div className="flex items-center gap-3">
@@ -15,12 +26,19 @@ export const RideCard = ({ ride }) => {
             className="w-12 h-12 rounded-full object-cover border-2 border-primary/20 shadow-sm"
           />
           <div>
-            <h3 className="font-headline-md text-headline-md text-on-surface font-semibold">
-              {ride.personName}
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-headline-md text-headline-md text-on-surface font-semibold">
+                {isOwnRide ? `${ride.personName} (You)` : ride.personName}
+              </h3>
+              {isOwnRide && (
+                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                  Your Offer
+                </span>
+              )}
+            </div>
             <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px] text-primary">person</span>
-              Person offering the ride
+              {isOwnRide ? 'You offered this ride' : 'Person offering the ride'}
             </span>
           </div>
         </div>
@@ -87,13 +105,19 @@ export const RideCard = ({ ride }) => {
         </div>
       )}
 
-      {/* Primary Action Button */}
+      {/* Action Button */}
       <button
         onClick={() => navigate(`/ride-details/${ride.id}`)}
-        className="w-full min-h-[48px] bg-primary text-on-primary rounded-xl font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-sm mt-1"
+        className={`w-full min-h-[48px] rounded-xl font-label-bold text-label-bold flex items-center justify-center gap-2 transition-colors shadow-sm mt-1 cursor-pointer ${
+          isOwnRide
+            ? 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest border border-outline-variant/40'
+            : 'bg-primary text-on-primary hover:bg-primary/90'
+        }`}
       >
-        <span>View Ride</span>
-        <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+        <span>{isOwnRide ? 'View My Offered Ride' : 'View Ride'}</span>
+        <span className="material-symbols-outlined text-[18px]">
+          {isOwnRide ? 'info' : 'arrow_forward'}
+        </span>
       </button>
     </div>
   );

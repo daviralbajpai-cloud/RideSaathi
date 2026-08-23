@@ -54,18 +54,32 @@ export const RideRequestPage = () => {
     );
   }
 
-  if (!ride) {
+  const isOwnRide = Boolean(
+    user?.isAuthenticated && (
+      (user?.id && (ride?.offeredBy === user.id || ride?.offered_by === user.id || ride?.offeredByProfile?.id === user.id)) ||
+      (user?.name && user.name.trim() !== '' && ride?.personName === user.name)
+    )
+  );
+
+  if (isOwnRide) {
     return (
-      <div className="w-full flex-1 flex flex-col items-center justify-center p-xl text-center">
-        <span className="material-symbols-outlined text-5xl text-outline mb-2">directions_car_off</span>
-        <h2 className="font-headline-md text-headline-md text-on-surface font-bold">Ride Not Found</h2>
-        <p className="font-body-sm text-on-surface-variant mt-1 mb-4">The selected ride could not be loaded for requesting.</p>
-        <button
-          onClick={() => navigate('/home')}
-          className="px-4 py-2 bg-primary text-on-primary rounded-xl font-label-bold text-label-bold shadow-sm"
-        >
-          Return to Home
-        </button>
+      <div className="w-full flex-1 flex flex-col">
+        <TopBar title="Ride Request" showBack={true} />
+        <div className="flex-1 flex flex-col items-center justify-center p-xl text-center gap-3 my-auto">
+          <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+            <span className="material-symbols-outlined text-3xl">directions_car</span>
+          </div>
+          <h2 className="font-headline-md text-lg font-bold text-on-surface">You Offered This Ride</h2>
+          <p className="font-body-sm text-xs text-on-surface-variant max-w-xs">
+            You cannot request seats on a ride that you created. Passenger requests for your ride will appear in your Activity tab.
+          </p>
+          <button
+            onClick={() => navigate('/activity')}
+            className="mt-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl font-label-bold text-xs shadow-sm hover:bg-primary/90 transition-colors cursor-pointer"
+          >
+            Manage in Activity
+          </button>
+        </div>
       </div>
     );
   }

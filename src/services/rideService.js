@@ -207,9 +207,22 @@ export const rideService = {
       return { data: null, error: new Error('Invalid ride selected.') };
     }
 
-    // Security Check: Verify user has a valid 10-digit phone number before calling RPC
+    // Security Check: Verify user is not requesting their own ride
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (authUser) {
+      const { data: rideCheck } = await supabase
+        .from('rides')
+        .select('offered_by')
+        .eq('id', rideId)
+        .maybeSingle();
+
+      if (rideCheck && rideCheck.offered_by === authUser.id) {
+        return {
+          data: null,
+          error: new Error('You cannot request or book a ride that you offered.')
+        };
+      }
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('phone')
