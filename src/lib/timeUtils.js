@@ -55,9 +55,23 @@ export const generateTimeSlotsForDate = (selectedDateStr) => {
 
   const { hour: currentHour, minute: currentMinute } = getCurrentTimeIST();
 
-  // If today, calculate starting slot based on current time (e.g. at 2:38 PM, start from 2:30 PM)
-  const startFromHour = isToday ? currentHour : 0;
-  const startFromMinute = isToday ? (currentMinute < 30 ? 0 : 30) : 0;
+  // For today, enforce a minimum 15-minute lead time so offered slots are strictly upcoming:
+  // e.g. at 3:10 AM -> first slot is 03:30 AM - 04:00 AM
+  // e.g. at 3:31 AM -> first slot is 04:00 AM - 04:30 AM
+  let startFromHour = isToday ? currentHour : 0;
+  let startFromMinute = 0;
+
+  if (isToday) {
+    if (currentMinute < 15) {
+      startFromMinute = 30;
+    } else if (currentMinute < 45) {
+      startFromHour = (currentHour + 1) % 24;
+      startFromMinute = 0;
+    } else {
+      startFromHour = (currentHour + 1) % 24;
+      startFromMinute = 30;
+    }
+  }
 
   for (let hour = 0; hour < 24; hour++) {
     for (let minute of [0, 30]) {
@@ -220,8 +234,8 @@ export const isRideExpired = (dateStr, timeStr) => {
       return false;
     }
 
-    // 45-minute grace period after departure window before considering the ride completed
-    const GRACE_PERIOD_MS = 45 * 60 * 1000;
+    // 2-hour grace period after departure window before considering the ride completed
+    const GRACE_PERIOD_MS = 2 * 60 * 60 * 1000;
     return Date.now() > (rideDateTime.getTime() + GRACE_PERIOD_MS);
   } catch (err) {
     console.error('[timeUtils] Error checking ride expiration:', err);
