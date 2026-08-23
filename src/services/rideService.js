@@ -113,7 +113,7 @@ export const rideService = {
         .toLowerCase()
         .replace(/[,.-]/g, ' ')
         .split(/\s+/)
-        .filter(t => t.length > 2);
+        .filter(t => t.length >= 2);
     };
 
     const fromTokens = extractTokens(from);
