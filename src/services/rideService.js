@@ -35,16 +35,10 @@ export const rideService = {
     const fromLabel = typeof rideData.from === 'object' ? rideData.from.label : rideData.from;
     const toLabel = typeof rideData.to === 'object' ? rideData.to.label : rideData.to;
 
-    const payload = {
+    const basePayload = {
       offered_by: authUser.id,
       from_location: fromLabel,
       to_location: toLabel,
-      from_latitude: rideData.fromLatitude ?? (typeof rideData.from === 'object' ? rideData.from.latitude : null),
-      from_longitude: rideData.fromLongitude ?? (typeof rideData.from === 'object' ? rideData.from.longitude : null),
-      to_latitude: rideData.toLatitude ?? (typeof rideData.to === 'object' ? rideData.to.latitude : null),
-      to_longitude: rideData.toLongitude ?? (typeof rideData.to === 'object' ? rideData.to.longitude : null),
-      from_place_id: rideData.fromPlaceId ?? (typeof rideData.from === 'object' ? rideData.from.placeId : null),
-      to_place_id: rideData.toPlaceId ?? (typeof rideData.to === 'object' ? rideData.to.placeId : null),
       ride_date: rideData.date,
       departure_time: rideData.departureTime,
       available_seats: Number(rideData.availableSeats),
@@ -53,13 +47,36 @@ export const rideService = {
       status: 'active'
     };
 
-    console.log('Sending INSERT to public.rides:', payload);
+    const fullPayload = {
+      ...basePayload,
+      from_latitude: rideData.fromLatitude ?? (typeof rideData.from === 'object' ? rideData.from.latitude : null),
+      from_longitude: rideData.fromLongitude ?? (typeof rideData.from === 'object' ? rideData.from.longitude : null),
+      to_latitude: rideData.toLatitude ?? (typeof rideData.to === 'object' ? rideData.to.latitude : null),
+      to_longitude: rideData.toLongitude ?? (typeof rideData.to === 'object' ? rideData.to.longitude : null),
+      from_place_id: rideData.fromPlaceId ?? (typeof rideData.from === 'object' ? rideData.from.placeId : null),
+      to_place_id: rideData.toPlaceId ?? (typeof rideData.to === 'object' ? rideData.to.placeId : null)
+    };
 
-    const { data, error } = await supabase
+    console.log('Sending INSERT to public.rides:', fullPayload);
+
+    let { data, error } = await supabase
       .from('rides')
-      .insert(payload)
+      .insert(fullPayload)
       .select()
       .single();
+
+    // Fallback: If table does not have latitude/longitude columns yet, insert base payload
+    if (error && (error.message?.includes('from_latitude') || error.code === 'PGRST204' || error.message?.includes('schema cache'))) {
+      console.warn('Coordinates columns not found in public.rides. Falling back to standard schema payload...');
+      const fallbackResult = await supabase
+        .from('rides')
+        .insert(basePayload)
+        .select()
+        .single();
+
+      data = fallbackResult.data;
+      error = fallbackResult.error;
+    }
 
     if (error) {
       console.error('Supabase INSERT into public.rides failed:', error);
