@@ -3,13 +3,21 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 export const authService = {
   // Option 1: Continue with Google OAuth for normal users
   signInWithGoogle: async () => {
-    if (!isSupabaseConfigured()) {
-      return { data: null, error: new Error('Supabase credentials not configured in .env') };
+    if (!isSupabaseConfigured() || !supabase) {
+      return {
+        data: null,
+        error: new Error('Supabase is not configured. Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your environment variables.')
+      };
     }
+    const redirectUrl = `${window.location.origin}/home`;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/home'
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
       }
     });
     return { data, error };

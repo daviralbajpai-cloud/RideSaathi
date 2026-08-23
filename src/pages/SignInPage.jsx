@@ -28,16 +28,8 @@ export const SignInPage = () => {
       return;
     }
 
-    // Demo fallback login if Supabase env vars not configured yet
-    setTimeout(() => {
-      setLoading(false);
-      setUser(prev => ({ ...prev, isAuthenticated: true }));
-      if (user?.isSetupComplete) {
-        navigate('/home');
-      } else {
-        navigate('/profile-setup');
-      }
-    }, 500);
+    setLoading(false);
+    setErrorMsg('Supabase environment variables are missing. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your deployment configuration.');
   };
 
   // Option 2: Admin Authentication (Email + Password + Database `is_admin = true` check)

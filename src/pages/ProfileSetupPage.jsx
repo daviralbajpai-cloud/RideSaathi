@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { validatePhoneNumber } from '../lib/phoneUtils';
+import { DEFAULT_AVATAR, PRESET_AVATARS, processImageFile } from '../lib/imageUtils';
 
 export const ProfileSetupPage = () => {
   const navigate = useNavigate();
   const { updateUserProfile, user } = useApp();
 
+  const fileInputRef = useRef(null);
   const [name, setName] = useState(user?.name || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [photo, setPhoto] = useState(user?.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80');
+  const [photo, setPhoto] = useState(user?.photo || DEFAULT_AVATAR);
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [phoneError, setPhoneError] = useState('');
 
-  const samplePhotos = [
-    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80"
-  ];
+  const handlePhotoFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    setPhoneError('');
+    const { dataUrl, error } = await processImageFile(file);
+    setUploadingPhoto(false);
+    if (error) {
+      setPhoneError(error);
+      return;
+    }
+    if (dataUrl) {
+      setPhoto(dataUrl);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,31 +73,73 @@ export const ProfileSetupPage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col gap-4">
-          {/* Avatar Selector */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="relative">
+          {/* Avatar Selector with Camera Upload */}
+          <div className="flex flex-col items-center gap-3 bg-surface-container-low/50 p-4 rounded-2xl border border-outline-variant/30">
+            <div className="relative group">
               <img
-                src={photo}
+                src={photo || DEFAULT_AVATAR}
                 alt="Selected Avatar"
-                className="w-20 h-20 rounded-full object-cover border-2 border-primary shadow-sm"
+                className="w-24 h-24 rounded-full object-cover border-4 border-primary/30 shadow-md transition-all"
               />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md hover:bg-primary/90 transition-all border-2 border-surface cursor-pointer"
+                title="Upload custom photo"
+              >
+                <span className="material-symbols-outlined text-base">photo_camera</span>
+              </button>
             </div>
-            <span className="text-xs text-on-surface-variant font-medium">
-              Select Avatar
-            </span>
-            <div className="flex gap-2.5">
-              {samplePhotos.map((url, idx) => (
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handlePhotoFileChange}
+              accept="image/*"
+              className="hidden"
+            />
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="px-3.5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 shadow-sm hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <span className="material-symbols-outlined text-base">
+                  {uploadingPhoto ? 'progress_activity' : 'cloud_upload'}
+                </span>
+                <span>{uploadingPhoto ? 'Processing...' : 'Upload Photo'}</span>
+              </button>
+              {photo !== DEFAULT_AVATAR && (
                 <button
                   type="button"
-                  key={idx}
-                  onClick={() => setPhoto(url)}
-                  className={`w-10 h-10 rounded-full overflow-hidden border-2 transition-all cursor-pointer ${
-                    photo === url ? 'border-primary scale-110 shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'
-                  }`}
+                  onClick={() => setPhoto(DEFAULT_AVATAR)}
+                  className="px-3 py-1.5 rounded-xl bg-surface-container text-on-surface-variant text-xs font-medium hover:bg-surface-container-high transition-colors cursor-pointer border border-outline-variant/40"
                 >
-                  <img src={url} alt={`Avatar ${idx}`} className="w-full h-full object-cover" />
+                  Reset
                 </button>
-              ))}
+              )}
+            </div>
+
+            <div className="flex flex-col items-center gap-1.5 pt-1 border-t border-outline-variant/20 w-full">
+              <span className="text-[11px] text-on-surface-variant font-medium">
+                Or select an avatar:
+              </span>
+              <div className="flex gap-2">
+                {PRESET_AVATARS.map((url, idx) => (
+                  <button
+                    type="button"
+                    key={idx}
+                    onClick={() => setPhoto(url)}
+                    className={`w-9 h-9 rounded-full overflow-hidden border-2 transition-all cursor-pointer ${
+                      photo === url ? 'border-primary scale-110 shadow-sm ring-2 ring-primary/20' : 'border-transparent opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={url} alt={`Avatar ${idx}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -24,16 +24,8 @@ export const WelcomePage = () => {
       return;
     }
 
-    // Demo fallback login if Supabase env vars not configured
-    setTimeout(() => {
-      setLoading(false);
-      setUser(prev => ({ ...prev, isAuthenticated: true }));
-      if (user?.isSetupComplete) {
-        navigate('/home');
-      } else {
-        navigate('/profile-setup');
-      }
-    }, 500);
+    setLoading(false);
+    setErrorMsg('Supabase environment variables are missing. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your deployment configuration.');
   };
 
   return (

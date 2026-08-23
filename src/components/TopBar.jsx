@@ -49,15 +49,17 @@ export const TopBar = ({ title, showBack }) => {
 
         <button
           onClick={() => navigate('/profile')}
-          className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant/40 hover:opacity-90 transition-opacity"
+          className="w-9 h-9 rounded-full overflow-hidden border border-outline-variant/40 hover:opacity-90 transition-opacity flex items-center justify-center bg-surface-container cursor-pointer"
           aria-label="User Profile"
         >
-          {user?.photo ? (
-            <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
-          ) : (
+          {user?.isAuthenticated && user?.photo ? (
+            <img src={user.photo} alt={user.name || 'User'} className="w-full h-full object-cover" />
+          ) : user?.isAuthenticated && user?.name ? (
             <div className="w-full h-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
-              {user?.name?.[0] || 'U'}
+              {user.name[0]}
             </div>
+          ) : (
+            <span className="material-symbols-outlined text-xl text-on-surface-variant">person</span>
           )}
         </button>
       </div>

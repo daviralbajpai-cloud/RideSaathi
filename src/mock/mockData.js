@@ -1,3 +1,14 @@
+export const defaultGuestUser = {
+  id: null,
+  email: '',
+  name: '',
+  phone: '',
+  photo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+  isAdmin: false,
+  isAuthenticated: false,
+  isSetupComplete: false
+};
+
 export const initialUser = {
   name: "Rahul Sharma",
   phone: "+91 98765 43210",

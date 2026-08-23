@@ -6,21 +6,24 @@ import { notificationService } from '../services/notificationService';
 import { validatePhoneNumber } from '../lib/phoneUtils';
 import { isRideExpired, getTodayDateIST } from '../lib/timeUtils';
 import {
-  initialUser,
-  initialRides,
-  initialNotifications,
-  initialActivity,
-  initialRecurringRides
+  defaultGuestUser
 } from '../mock/mockData';
+import { DEFAULT_AVATAR } from '../lib/imageUtils';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(initialUser);
-  const [rides, setRides] = useState(initialRides);
-  const [notifications, setNotifications] = useState(initialNotifications);
-  const [activity, setActivity] = useState(initialActivity);
-  const [recurringRides, setRecurringRides] = useState(initialRecurringRides);
+  const [user, setUser] = useState(defaultGuestUser);
+  const [rides, setRides] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [activity, setActivity] = useState({
+    upcoming: [],
+    requests: [],
+    offered: [],
+    completed: [],
+    cancelled: []
+  });
+  const [recurringRides, setRecurringRides] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Search state
@@ -54,7 +57,7 @@ export const AppProvider = ({ children }) => {
           id: r.id,
           personName: r.offered_by_profile?.name || 'RideSaathi User',
           personPhoto:
-            r.offered_by_profile?.photo_url || initialUser.photo,
+            r.offered_by_profile?.photo_url || DEFAULT_AVATAR,
           from: r.from_location,
           to: r.to_location,
           date: r.ride_date,
@@ -71,63 +74,121 @@ export const AppProvider = ({ children }) => {
       }
     });
 
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        authService.getProfile(session.user.id).then(({ data: profile }) => {
-          const isUserAdmin = Boolean(
-            profile?.is_admin === true ||
-            profile?.is_admin === 'true' ||
-            profile?.is_admin === 'TRUE' ||
-            profile?.is_admin === 't' ||
-            profile?.is_admin === 1 ||
-            session.user.app_metadata?.is_admin === true ||
-            session.user.user_metadata?.is_admin === true ||
-            session.user.app_metadata?.role === 'admin' ||
-            session.user.user_metadata?.role === 'admin' ||
-            session.user.email?.toLowerCase() === 'daviralbajpai@gmail.com'
-          );
-
-          setUser({
-            id: session.user.id,
-            email: session.user.email,
-            name:
-              profile?.name ||
-              session.user.user_metadata?.full_name ||
-              'User',
-            phone: profile?.phone || '',
-            photo:
-              profile?.photo_url ||
-              session.user.user_metadata?.avatar_url ||
-              initialUser.photo,
-            isAdmin: isUserAdmin,
-            isAuthenticated: true,
-            isSetupComplete: Boolean(profile?.name && profile?.phone)
-          });
-
-          // Fetch user activity journeys
-          fetchUserActivity(session.user.id);
-
-          // Fetch notifications
-          notificationService
-            .getUserNotifications(session.user.id)
-            .then(({ data }) => {
-              if (data && data.length > 0) {
-                setNotifications(data);
-              }
-            });
-
-          // Realtime Notifications
-          unsubscribeNotifs =
-            notificationService.subscribeToNotifications(
-              session.user.id,
-              newNotif => {
-                setNotifications(prev => [newNotif, ...prev]);
-              }
-            );
+    // Helper to sync user profile from Supabase or Google session
+    const syncUserProfile = async (sessionUser) => {
+      if (!sessionUser) {
+        setUser(defaultGuestUser);
+        setNotifications([]);
+        setActivity({
+          upcoming: [],
+          requests: [],
+          offered: [],
+          completed: [],
+          cancelled: []
         });
+        return;
       }
 
+      let { data: profile } = await authService.getProfile(sessionUser.id);
+
+      // Auto-upsert profile if not found for a Google user
+      if (!profile) {
+        const googleName =
+          sessionUser.user_metadata?.full_name ||
+          sessionUser.user_metadata?.name ||
+          sessionUser.email?.split('@')[0] ||
+          'User';
+        const googlePhoto =
+          sessionUser.user_metadata?.avatar_url ||
+          sessionUser.user_metadata?.picture ||
+          DEFAULT_AVATAR;
+        const googlePhone = sessionUser.user_metadata?.phone || '';
+
+        const { data: createdProfile } = await authService.updateProfile(sessionUser.id, {
+          name: googleName,
+          phone: googlePhone,
+          photo_url: googlePhoto
+        });
+
+        if (createdProfile) {
+          profile = createdProfile;
+        }
+      }
+
+      const isUserAdmin = Boolean(
+        profile?.is_admin === true ||
+        profile?.is_admin === 'true' ||
+        profile?.is_admin === 'TRUE' ||
+        profile?.is_admin === 't' ||
+        profile?.is_admin === 1 ||
+        sessionUser.app_metadata?.is_admin === true ||
+        sessionUser.user_metadata?.is_admin === true ||
+        sessionUser.app_metadata?.role === 'admin' ||
+        sessionUser.user_metadata?.role === 'admin' ||
+        sessionUser.email?.toLowerCase() === 'daviralbajpai@gmail.com'
+      );
+
+      const resolvedPhoto =
+        profile?.photo_url ||
+        sessionUser.user_metadata?.avatar_url ||
+        sessionUser.user_metadata?.picture ||
+        DEFAULT_AVATAR;
+
+      const resolvedName =
+        profile?.name ||
+        sessionUser.user_metadata?.full_name ||
+        sessionUser.user_metadata?.name ||
+        sessionUser.email?.split('@')[0] ||
+        'User';
+
+      const resolvedPhone = profile?.phone || sessionUser.user_metadata?.phone || '';
+
+      setUser({
+        id: sessionUser.id,
+        email: sessionUser.email,
+        name: resolvedName,
+        phone: resolvedPhone,
+        photo: resolvedPhoto,
+        isAdmin: isUserAdmin,
+        isAuthenticated: true,
+        isSetupComplete: Boolean(resolvedName && resolvedPhone)
+      });
+
+      // Fetch user activity journeys
+      fetchUserActivity(sessionUser.id);
+
+      // Fetch notifications
+      notificationService
+        .getUserNotifications(sessionUser.id)
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            setNotifications(data);
+          }
+        });
+
+      // Realtime Notifications
+      if (unsubscribeNotifs) {
+        unsubscribeNotifs();
+      }
+
+      unsubscribeNotifs = notificationService.subscribeToNotifications(
+        sessionUser.id,
+        newNotif => {
+          setNotifications(prev => [
+            newNotif,
+            ...prev.filter(n => n.id !== newNotif.id)
+          ]);
+        }
+      );
+    };
+
+    // Check active session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        await syncUserProfile(session.user);
+      } else {
+        setUser(defaultGuestUser);
+      }
       setLoading(false);
     });
 
@@ -136,68 +197,17 @@ export const AppProvider = ({ children }) => {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        const { data: profile } = await authService.getProfile(
-          session.user.id
-        );
-
-        const isUserAdmin = Boolean(
-          profile?.is_admin === true ||
-          profile?.is_admin === 'true' ||
-          profile?.is_admin === 'TRUE' ||
-          profile?.is_admin === 't' ||
-          profile?.is_admin === 1 ||
-          session.user.app_metadata?.is_admin === true ||
-          session.user.user_metadata?.is_admin === true ||
-          session.user.app_metadata?.role === 'admin' ||
-          session.user.user_metadata?.role === 'admin' ||
-          session.user.email?.toLowerCase() === 'daviralbajpai@gmail.com'
-        );
-
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          name:
-            profile?.name ||
-            session.user.user_metadata?.full_name ||
-            'User',
-          phone: profile?.phone || '',
-          photo:
-            profile?.photo_url ||
-            session.user.user_metadata?.avatar_url ||
-            initialUser.photo,
-          isAdmin: isUserAdmin,
-          isAuthenticated: true,
-          isSetupComplete: Boolean(profile?.name && profile?.phone)
-        });
-
-        // Fetch user activity journeys
-        fetchUserActivity(session.user.id);
-
-        // Fetch notifications
-        notificationService
-          .getUserNotifications(session.user.id)
-          .then(({ data }) => {
-            setNotifications(data || []);
-          });
-
-        // Realtime Notifications
-        if (unsubscribeNotifs) {
-          unsubscribeNotifs();
-        }
-
-        unsubscribeNotifs =
-          notificationService.subscribeToNotifications(
-            session.user.id,
-            newNotif => {
-              setNotifications(prev => [
-                newNotif,
-                ...prev.filter(n => n.id !== newNotif.id)
-              ]);
-            }
-          );
+        await syncUserProfile(session.user);
       } else {
-        setUser(initialUser);
+        setUser(defaultGuestUser);
         setNotifications([]);
+        setActivity({
+          upcoming: [],
+          requests: [],
+          offered: [],
+          completed: [],
+          cancelled: []
+        });
       }
     });
 
@@ -233,7 +243,7 @@ export const AppProvider = ({ children }) => {
           personName:
             r.offered_by_profile?.name || 'RideSaathi User',
           personPhoto:
-            r.offered_by_profile?.photo_url || initialUser.photo,
+            r.offered_by_profile?.photo_url || DEFAULT_AVATAR,
           from: r.from_location,
           to: r.to_location,
           date: r.ride_date,
@@ -355,8 +365,8 @@ export const AppProvider = ({ children }) => {
 
     const rideObj = {
       id: `ride-${Date.now()}`,
-      personName: user.name || 'Rahul Sharma',
-      personPhoto: user.photo,
+      personName: user.name || 'User',
+      personPhoto: user.photo || DEFAULT_AVATAR,
       ...newRide,
       from: fromLabel,
       to: toLabel
@@ -367,8 +377,8 @@ export const AppProvider = ({ children }) => {
     const offeredItem = {
       id: `act-${Date.now()}`,
       personOffering:
-        'You (' + (user.name || 'Rahul') + ')',
-      personPhoto: user.photo,
+        'You (' + (user.name || 'User') + ')',
+      personPhoto: user.photo || DEFAULT_AVATAR,
       from: newRide.from,
       to: newRide.to,
       date: newRide.date,

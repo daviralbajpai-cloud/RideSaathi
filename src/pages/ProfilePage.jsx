@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { useApp } from '../context/AppContext';
 import { authService } from '../services/authService';
 import { validatePhoneNumber } from '../lib/phoneUtils';
 import { LocationAutocomplete } from '../components/LocationAutocomplete';
+import { DEFAULT_AVATAR, PRESET_AVATARS, processImageFile } from '../lib/imageUtils';
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
@@ -14,11 +15,13 @@ export const ProfilePage = () => {
   const [activeModal, setActiveModal] = useState(null);
 
   // Edit Profile form state
+  const fileInputRef = useRef(null);
   const [editName, setEditName] = useState(user?.name || '');
   const [editPhone, setEditPhone] = useState(user?.phone || '');
-  const [editPhoto, setEditPhoto] = useState(user?.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80');
+  const [editPhoto, setEditPhoto] = useState(user?.photo || DEFAULT_AVATAR);
   const [editError, setEditError] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Sync edit state with user
   useEffect(() => {
@@ -28,6 +31,22 @@ export const ProfilePage = () => {
       if (user.photo) setEditPhoto(user.photo);
     }
   }, [user]);
+
+  const handlePhotoFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    setEditError('');
+    const { dataUrl, error } = await processImageFile(file);
+    setUploadingPhoto(false);
+    if (error) {
+      setEditError(error);
+      return;
+    }
+    if (dataUrl) {
+      setEditPhoto(dataUrl);
+    }
+  };
 
   // Saved Places state (persisted in localStorage)
   const [savedPlaces, setSavedPlaces] = useState(() => {
@@ -189,7 +208,7 @@ export const ProfilePage = () => {
         <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col items-center text-center gap-3">
           <div className="relative">
             <img
-              src={user?.photo || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
+              src={user?.photo || DEFAULT_AVATAR}
               alt={user?.name || 'User'}
               className="w-20 h-20 rounded-full object-cover border-2 border-primary shadow-sm"
             />
@@ -202,33 +221,49 @@ export const ProfilePage = () => {
 
           <div>
             <h2 className="font-headline-md text-xl font-bold text-on-surface">
-              {user?.name || 'RideSaathi User'}
+              {user?.isAuthenticated ? (user.name || 'RideSaathi User') : 'Guest User'}
             </h2>
 
-            {user?.phone && String(user.phone).trim() !== '' ? (
-              <p className="text-sm text-on-surface-variant flex items-center justify-center gap-1 mt-0.5 font-medium">
-                <span className="material-symbols-outlined text-sm text-primary">call</span>
-                {String(user.phone).trim()}
-              </p>
+            {user?.isAuthenticated ? (
+              user?.phone && String(user.phone).trim() !== '' ? (
+                <p className="text-sm text-on-surface-variant flex items-center justify-center gap-1 mt-0.5 font-medium">
+                  <span className="material-symbols-outlined text-sm text-primary">call</span>
+                  {String(user.phone).trim()}
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setActiveModal('edit')}
+                  className="text-xs text-error font-bold flex items-center justify-center gap-1 mt-1 bg-error-container/30 px-3 py-1 rounded-xl border border-error/30 hover:bg-error-container/50 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-sm">error</span>
+                  Add Phone Number
+                </button>
+              )
             ) : (
-              <button
-                type="button"
-                onClick={() => setActiveModal('edit')}
-                className="text-xs text-error font-bold flex items-center justify-center gap-1 mt-1 bg-error-container/30 px-3 py-1 rounded-xl border border-error/30 hover:bg-error-container/50 transition-colors"
-              >
-                <span className="material-symbols-outlined text-sm">error</span>
-                Add Phone Number
-              </button>
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Sign in with Google to find and offer carpools.
+              </p>
             )}
           </div>
 
-          <button
-            onClick={() => setActiveModal('edit')}
-            className="w-full min-h-[42px] bg-surface-container-low border border-outline-variant/40 text-on-surface hover:text-primary font-label-bold text-xs rounded-xl hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-98"
-          >
-            <span className="material-symbols-outlined text-sm text-primary">edit</span>
-            Edit Profile
-          </button>
+          {user?.isAuthenticated ? (
+            <button
+              onClick={() => setActiveModal('edit')}
+              className="w-full min-h-[42px] bg-surface-container-low border border-outline-variant/40 text-on-surface hover:text-primary font-label-bold text-xs rounded-xl hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-sm text-primary">edit</span>
+              Edit Profile & Photo
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/signin')}
+              className="w-full min-h-[42px] bg-primary text-on-primary font-label-bold text-xs rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 shadow-sm active:scale-98 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-sm">login</span>
+              Sign In to Your Account
+            </button>
+          )}
         </div>
 
         {/* Admin Dashboard Quick Access (If Admin) */}
@@ -275,14 +310,24 @@ export const ProfilePage = () => {
           ))}
         </div>
 
-        {/* Logout Button */}
-        <button
-          onClick={() => setActiveModal('logout_confirm')}
-          className="w-full min-h-[48px] bg-error-container/40 text-error border border-error/30 rounded-xl font-label-bold text-xs font-bold flex items-center justify-center gap-2 hover:bg-error-container/60 transition-colors shadow-sm active:scale-98"
-        >
-          <span className="material-symbols-outlined text-lg">logout</span>
-          <span>Log Out</span>
-        </button>
+        {/* Logout or Sign In Button */}
+        {user?.isAuthenticated ? (
+          <button
+            onClick={() => setActiveModal('logout_confirm')}
+            className="w-full min-h-[48px] bg-error-container/40 text-error border border-error/30 rounded-xl font-label-bold text-xs font-bold flex items-center justify-center gap-2 hover:bg-error-container/60 transition-colors shadow-sm active:scale-98 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-lg">logout</span>
+            <span>Log Out</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/signin')}
+            className="w-full min-h-[48px] bg-primary text-on-primary rounded-xl font-label-bold text-xs font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-sm active:scale-98 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-lg">login</span>
+            <span>Sign In with Google</span>
+          </button>
+        )}
       </div>
 
       {/* ============================================================ */}
@@ -306,27 +351,71 @@ export const ProfilePage = () => {
             </div>
 
             <form onSubmit={handleSaveProfile} className="flex flex-col gap-4">
-              {/* Photo selector */}
-              <div className="flex flex-col items-center gap-2">
-                <img
-                  src={editPhoto}
-                  alt="Profile Preview"
-                  className="w-18 h-18 rounded-full object-cover border-2 border-primary shadow-sm"
+              {/* Photo selector with device upload & camera trigger */}
+              <div className="flex flex-col items-center gap-3 bg-surface-container-low/50 p-4 rounded-2xl border border-outline-variant/30">
+                <div className="relative group">
+                  <img
+                    src={editPhoto || DEFAULT_AVATAR}
+                    alt="Profile Preview"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-primary/30 shadow-md transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md hover:bg-primary/90 transition-all border-2 border-surface cursor-pointer"
+                    title="Upload photo from device"
+                  >
+                    <span className="material-symbols-outlined text-base">photo_camera</span>
+                  </button>
+                </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoFileChange}
+                  accept="image/*"
+                  className="hidden"
                 />
-                <span className="text-xs text-on-surface-variant font-medium">Select Avatar:</span>
-                <div className="flex gap-2">
-                  {samplePhotos.map((url, i) => (
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    className="px-3.5 py-1.5 rounded-xl bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 shadow-sm hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      {uploadingPhoto ? 'progress_activity' : 'cloud_upload'}
+                    </span>
+                    <span>{uploadingPhoto ? 'Processing...' : 'Upload Photo'}</span>
+                  </button>
+                  {editPhoto !== DEFAULT_AVATAR && (
                     <button
-                      key={i}
                       type="button"
-                      onClick={() => setEditPhoto(url)}
-                      className={`w-9 h-9 rounded-full overflow-hidden border-2 transition-all cursor-pointer ${
-                        editPhoto === url ? 'border-primary scale-110 shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
+                      onClick={() => setEditPhoto(DEFAULT_AVATAR)}
+                      className="px-3 py-1.5 rounded-xl bg-surface-container text-on-surface-variant text-xs font-medium hover:bg-surface-container-high transition-colors cursor-pointer border border-outline-variant/40"
                     >
-                      <img src={url} alt={`Avatar ${i}`} className="w-full h-full object-cover" />
+                      Reset
                     </button>
-                  ))}
+                  )}
+                </div>
+
+                <div className="flex flex-col items-center gap-1.5 pt-1 border-t border-outline-variant/20 w-full">
+                  <span className="text-[11px] text-on-surface-variant font-medium">Or select an avatar:</span>
+                  <div className="flex gap-2">
+                    {PRESET_AVATARS.map((url, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setEditPhoto(url)}
+                        className={`w-9 h-9 rounded-full overflow-hidden border-2 transition-all cursor-pointer ${
+                          editPhoto === url ? 'border-primary scale-110 shadow-sm ring-2 ring-primary/20' : 'border-transparent opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={url} alt={`Avatar ${i}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

@@ -21,12 +21,26 @@ export const HomePage = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold">
-              Hello, {user?.name?.split(' ')[0] || 'Friend'}!
+              {user?.isAuthenticated
+                ? `Hello, ${user?.name?.split(' ')[0] || 'Friend'}!`
+                : 'Welcome to RideSaathi!'}
             </h2>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Where are you heading today?
+              {user?.isAuthenticated
+                ? 'Where are you heading today?'
+                : 'Find or offer carpools with verified commuters.'}
             </p>
           </div>
+
+          {!user?.isAuthenticated && (
+            <button
+              onClick={() => navigate('/signin')}
+              className="px-3.5 py-1.5 rounded-xl bg-primary text-on-primary font-label-bold text-xs shadow-sm hover:bg-primary/90 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-sm">login</span>
+              <span>Sign In</span>
+            </button>
+          )}
         </div>
 
         {/* Primary Action Cards Grid */}
@@ -113,19 +127,42 @@ export const HomePage = () => {
             <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
               Available Carpools Nearby
             </h3>
-            <button
-              onClick={() => navigate('/available-rides')}
-              className="text-primary font-label-bold text-body-sm hover:underline"
-            >
-              See all
-            </button>
+            {featuredRides.length > 0 && (
+              <button
+                onClick={() => navigate('/available-rides')}
+                className="text-primary font-label-bold text-body-sm hover:underline cursor-pointer"
+              >
+                See all
+              </button>
+            )}
           </div>
 
-          <div className="flex flex-col gap-md">
-            {featuredRides.map(ride => (
-              <RideCard key={ride.id} ride={ride} />
-            ))}
-          </div>
+          {featuredRides.length > 0 ? (
+            <div className="flex flex-col gap-md">
+              {featuredRides.map(ride => (
+                <RideCard key={ride.id} ride={ride} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 text-center flex flex-col items-center gap-3 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                <span className="material-symbols-outlined text-2xl">directions_car</span>
+              </div>
+              <div>
+                <h4 className="font-headline-md text-base font-bold text-on-surface">No carpools listed yet</h4>
+                <p className="font-body-sm text-xs text-on-surface-variant max-w-xs mt-0.5">
+                  Be the first commuter to offer a ride and share your commute!
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/offer-ride')}
+                className="px-4 py-2 bg-secondary text-on-secondary rounded-xl font-label-bold text-xs shadow-sm hover:bg-secondary/90 transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-base">add_circle</span>
+                <span>Offer a Ride</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Recent Activity Brief */}
