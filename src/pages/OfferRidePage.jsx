@@ -53,15 +53,18 @@ export const OfferRidePage = () => {
     setSubmitting(true);
     setErrorMsg('');
 
+    const finalFrom = fromLocation || (fromInput?.trim() ? { label: fromInput.trim() } : null);
+    const finalTo = toLocation || (toInput?.trim() ? { label: toInput.trim() } : null);
+
     const res = await addRide({
-      from: fromLocation || fromInput,
-      to: toLocation || toInput,
-      fromLatitude: fromLocation?.latitude,
-      fromLongitude: fromLocation?.longitude,
-      toLatitude: toLocation?.latitude,
-      toLongitude: toLocation?.longitude,
-      fromPlaceId: fromLocation?.placeId,
-      toPlaceId: toLocation?.placeId,
+      from: finalFrom,
+      to: finalTo,
+      fromLatitude: finalFrom?.latitude,
+      fromLongitude: finalFrom?.longitude,
+      toLatitude: finalTo?.latitude,
+      toLongitude: finalTo?.longitude,
+      fromPlaceId: finalFrom?.placeId,
+      toPlaceId: finalTo?.placeId,
       date,
       departureTime: time,
       availableSeats: Number(availableSeats),
@@ -86,15 +89,18 @@ export const OfferRidePage = () => {
     setFromError('');
     setToError('');
 
+    const finalFrom = fromLocation || (fromInput?.trim() ? { label: fromInput.trim() } : null);
+    const finalTo = toLocation || (toInput?.trim() ? { label: toInput.trim() } : null);
+
     let hasValidationError = false;
 
-    if (!fromLocation) {
-      setFromError('Please select a pickup location from the suggestions.');
+    if (!finalFrom) {
+      setFromError('Please enter a pickup location.');
       hasValidationError = true;
     }
 
-    if (!toLocation) {
-      setToError('Please select a destination from the suggestions.');
+    if (!finalTo) {
+      setToError('Please enter a destination.');
       hasValidationError = true;
     }
 
