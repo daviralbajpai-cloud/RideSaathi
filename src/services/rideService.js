@@ -530,27 +530,23 @@ export const rideService = {
           status: r.status === 'active' ? 'Active Offer' : (r.status === 'completed' ? 'Completed' : (r.status === 'cancelled' ? 'Cancelled' : r.status))
         };
 
-        if (r.status === 'completed') {
-          completedRides.push(item);
-        } else if (r.status === 'cancelled') {
-          cancelledRides.push(item);
-        } else {
-          // Status is active: only rides from strictly past calendar days move to Completed
-          const todayIST = getTodayDateIST();
-          const cleanDate = typeof r.ride_date === 'string' ? r.ride_date.trim().split('T')[0] : '';
-          const isStrictlyPastDate = cleanDate && cleanDate < todayIST;
+        const todayIST = getTodayDateIST();
+        const cleanDate = typeof r.ride_date === 'string' ? r.ride_date.trim().split('T')[0] : '';
+        const isStrictlyPastDate = cleanDate && cleanDate < todayIST;
 
-          if (isStrictlyPastDate) {
-            completedRides.push({
-              ...item,
-              status: 'Completed'
-            });
-          } else {
-            offeredRides.push({
-              ...item,
-              status: 'Active Offer'
-            });
-          }
+        if (r.status === 'cancelled') {
+          cancelledRides.push(item);
+        } else if (isStrictlyPastDate) {
+          completedRides.push({
+            ...item,
+            status: 'Completed'
+          });
+        } else {
+          // If ride is for today or future dates, strictly keep it active in Rides I Offered
+          offeredRides.push({
+            ...item,
+            status: 'Active Offer'
+          });
         }
       });
 
