@@ -136,8 +136,13 @@ export const rideService = {
       return { data: null, error };
     }
 
-    // Defense-in-depth: Filter out any rides whose departure time has passed
-    let matchingRides = rides.filter(ride => !isRideExpired(ride.ride_date, ride.departure_time));
+    // Keep all rides for today and future dates active
+    const todayIST = getTodayDateIST();
+    let matchingRides = rides.filter(ride => {
+      const cleanDate = typeof ride.ride_date === 'string' ? ride.ride_date.trim().split('T')[0] : '';
+      if (cleanDate && cleanDate < todayIST) return false;
+      return true;
+    });
 
     // Flexible location matching if criteria were supplied
     if (fromTokens.length > 0 || toTokens.length > 0) {
@@ -530,14 +535,21 @@ export const rideService = {
         } else if (r.status === 'cancelled') {
           cancelledRides.push(item);
         } else {
-          // Status is active: check if ride date/time has passed
-          if (isExpired) {
+          // Status is active: only rides from strictly past calendar days move to Completed
+          const todayIST = getTodayDateIST();
+          const cleanDate = typeof r.ride_date === 'string' ? r.ride_date.trim().split('T')[0] : '';
+          const isStrictlyPastDate = cleanDate && cleanDate < todayIST;
+
+          if (isStrictlyPastDate) {
             completedRides.push({
               ...item,
               status: 'Completed'
             });
           } else {
-            offeredRides.push(item);
+            offeredRides.push({
+              ...item,
+              status: 'Active Offer'
+            });
           }
         }
       });

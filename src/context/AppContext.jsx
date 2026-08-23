@@ -70,8 +70,7 @@ export const AppProvider = ({ children }) => {
           preferences: r.preferences || []
         }));
 
-        const unexpired = formatted.filter(r => !isRideExpired(r.date, r.departureTime));
-        setRides(unexpired);
+        setRides(formatted);
       } else {
         setRides([]);
       }
@@ -259,9 +258,8 @@ export const AppProvider = ({ children }) => {
           preferences: r.preferences || []
         }));
 
-        const unexpired = formatted.filter(r => !isRideExpired(r.date, r.departureTime));
-        setSearchResults(unexpired);
-        return unexpired;
+        setSearchResults(formatted);
+        return formatted;
       }
     }
 
