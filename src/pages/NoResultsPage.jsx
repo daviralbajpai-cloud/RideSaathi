@@ -5,10 +5,6 @@ import { TopBar } from '../components/TopBar';
 export const NoResultsPage = () => {
   const navigate = useNavigate();
 
-  const handleBookCab = () => {
-    alert("Redirecting to external cab fallback option...");
-  };
-
   return (
     <div className="w-full flex-1 flex flex-col">
       <TopBar title="Search Results" showBack={true} />
@@ -25,7 +21,7 @@ export const NoResultsPage = () => {
             No suitable carpool found.
           </h2>
           <p className="font-body-lg text-body-lg text-on-surface-variant">
-            Try changing your time or route to see more options.
+            No commuters are currently driving along this route for your selected time. Try changing your search filters or offer a ride yourself.
           </p>
         </div>
 
@@ -34,19 +30,19 @@ export const NoResultsPage = () => {
           {/* Primary Action: Edit Search */}
           <button
             onClick={() => navigate('/find-ride')}
-            className="w-full min-h-[52px] rounded-xl bg-primary text-on-primary font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"
+            className="w-full min-h-[52px] rounded-xl bg-primary text-on-primary font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">edit_calendar</span>
-            Edit Search
+            Edit Search Filters
           </button>
 
-          {/* External Fallback: Book a Cab */}
+          {/* Secondary Action: Offer a Ride */}
           <button
-            onClick={handleBookCab}
-            className="w-full min-h-[52px] rounded-xl bg-surface border border-outline-variant text-on-surface font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors shadow-sm"
+            onClick={() => navigate('/offer-ride')}
+            className="w-full min-h-[52px] rounded-xl bg-secondary text-on-secondary font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-secondary/90 transition-colors shadow-sm cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">local_taxi</span>
-            Book a Cab
+            <span className="material-symbols-outlined text-[20px]">add_circle</span>
+            Offer a Ride Instead
           </button>
         </div>
       </div>
