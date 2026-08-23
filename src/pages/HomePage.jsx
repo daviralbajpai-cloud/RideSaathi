@@ -84,43 +84,6 @@ export const HomePage = () => {
           </button>
         </div>
 
-        {/* Quick Feature Shortcuts */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => navigate('/smart-route')}
-            className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-3 flex items-center gap-3 hover:bg-surface-container-low transition-colors shadow-sm text-left"
-          >
-            <div className="w-10 h-10 rounded-xl bg-tertiary-container/30 text-tertiary flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-xl">alt_route</span>
-            </div>
-            <div>
-              <span className="font-label-bold text-label-bold text-on-surface block font-semibold">
-                Smart Route
-              </span>
-              <span className="font-body-sm text-[11px] text-outline">
-                Route overlaps
-              </span>
-            </div>
-          </button>
-
-          <button
-            onClick={() => navigate('/recurring-rides')}
-            className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-3 flex items-center gap-3 hover:bg-surface-container-low transition-colors shadow-sm text-left"
-          >
-            <div className="w-10 h-10 rounded-xl bg-primary-container/20 text-primary flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-xl">update</span>
-            </div>
-            <div>
-              <span className="font-label-bold text-label-bold text-on-surface block font-semibold">
-                Recurring Rides
-              </span>
-              <span className="font-body-sm text-[11px] text-outline">
-                Daily commute
-              </span>
-            </div>
-          </button>
-        </div>
-
         {/* Available Carpools Feed */}
         <div className="flex flex-col gap-md pt-sm">
           <div className="flex items-center justify-between">
