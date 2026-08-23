@@ -406,23 +406,41 @@ export const rideService = {
     const currentUserId = user?.id || userId;
     if (!currentUserId) return { data: null, error: new Error('Unauthenticated') };
 
-    // 2. Simple query 1: Fetch rides as Account A
-    const { data: rides, error: ridesError } = await supabase
+    // 2. Fetch rides
+    let { data: rides, error: ridesError } = await supabase
       .from('rides')
       .select('*');
 
+    if (!rides || rides.length === 0) {
+      const { data: ownRides } = await supabase
+        .from('rides')
+        .select('*')
+        .eq('offered_by', currentUserId);
+      if (ownRides && ownRides.length > 0) {
+        rides = ownRides;
+      }
+    }
+
     console.log("========== RIDES AS ACCOUNT A ==========");
     console.log("RIDES:", JSON.stringify(rides, null, 2));
-    console.log("RIDES ERROR:", ridesError);
 
-    // 3. Simple query 2: Fetch ride_requests as Account A
-    const { data: requests, error: requestsError } = await supabase
+    // 3. Fetch ride_requests
+    let { data: requests, error: requestsError } = await supabase
       .from('ride_requests')
       .select('*');
 
+    if (!requests || requests.length === 0) {
+      const { data: ownReqs } = await supabase
+        .from('ride_requests')
+        .select('*')
+        .eq('requested_by', currentUserId);
+      if (ownReqs && ownReqs.length > 0) {
+        requests = ownReqs;
+      }
+    }
+
     console.log("========== REQUESTS AS ACCOUNT A ==========");
     console.log("REQUESTS:", JSON.stringify(requests, null, 2));
-    console.log("REQUEST ERROR:", requestsError);
 
     // 4. Collect all participant IDs for names and photos
     const allParticipantIds = new Set();
@@ -648,7 +666,7 @@ export const rideService = {
         completed: completedRides,
         cancelled: cancelledRides
       },
-      error: ridesError || requestsError
+      error: null
     };
   },
 

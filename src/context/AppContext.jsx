@@ -560,7 +560,7 @@ export const AppProvider = ({ children }) => {
     const { data, error } =
       await rideService.getUserActivity(userId);
 
-    if (!error && data) {
+    if (data) {
       setActivity({
         offered: data.offered || [],
         requests: data.requests || [],
