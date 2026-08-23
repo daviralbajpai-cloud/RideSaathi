@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { RideCard } from '../components/RideCard';
 import { useApp } from '../context/AppContext';
+import { isRideExpired } from '../lib/timeUtils';
 
 export const AvailableRidesPage = () => {
   const navigate = useNavigate();
   const { searchResults, searchCriteria, rides } = useApp();
 
   // If search results exist, use them. Otherwise fallback to all initial rides.
-  const displayRides = searchResults.length > 0 ? searchResults : rides;
+  // Defense-in-depth: filter out any expired rides from active search results.
+  const rawRides = searchResults.length > 0 ? searchResults : rides;
+  const displayRides = rawRides.filter(r => !isRideExpired(r.date, r.departureTime));
 
   return (
     <div className="w-full flex-1 flex flex-col">

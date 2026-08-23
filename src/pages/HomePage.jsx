@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { RideCard } from '../components/RideCard';
 import { useApp } from '../context/AppContext';
+import { isRideExpired } from '../lib/timeUtils';
 
 export const HomePage = () => {
   const navigate = useNavigate();
   const { user, rides, activity } = useApp();
 
-  const featuredRides = rides.slice(0, 2);
+  const featuredRides = rides.filter(r => !isRideExpired(r.date, r.departureTime)).slice(0, 2);
+  const upcomingJourneys = (activity.upcoming || []).filter(item => !isRideExpired(item.date, item.time));
 
   return (
     <div className="w-full flex-1 flex flex-col">
@@ -127,7 +129,7 @@ export const HomePage = () => {
         </div>
 
         {/* Recent Activity Brief */}
-        {activity.upcoming.length > 0 && (
+        {upcomingJourneys.length > 0 && (
           <div className="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="font-label-bold text-label-bold text-on-surface font-semibold flex items-center gap-1.5">
@@ -141,7 +143,7 @@ export const HomePage = () => {
                 View Activity
               </button>
             </div>
-            {activity.upcoming.map((item, idx) => (
+            {upcomingJourneys.map((item, idx) => (
               <div key={idx} className="flex items-center justify-between py-1 border-t border-outline-variant/20">
                 <div>
                   <p className="font-label-bold text-body-sm text-on-surface font-semibold">

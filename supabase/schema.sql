@@ -21,6 +21,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- Index for admin lookup
 CREATE INDEX IF NOT EXISTS idx_profiles_is_admin ON public.profiles(is_admin);
 
+-- Public Profiles View (Exposes only id, name, photo_url to protect phone numbers before ride acceptance)
+CREATE OR REPLACE VIEW public.public_profiles AS
+  SELECT id, name, photo_url
+  FROM public.profiles;
+
 -- --------------------------------------------------------------------
 -- 2. RIDES TABLE
 -- --------------------------------------------------------------------
@@ -29,6 +34,12 @@ CREATE TABLE IF NOT EXISTS public.rides (
   offered_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   from_location TEXT NOT NULL,
   to_location TEXT NOT NULL,
+  from_latitude DOUBLE PRECISION,
+  from_longitude DOUBLE PRECISION,
+  to_latitude DOUBLE PRECISION,
+  to_longitude DOUBLE PRECISION,
+  from_place_id TEXT,
+  to_place_id TEXT,
   ride_date DATE NOT NULL,
   departure_time TEXT NOT NULL,
   available_seats INTEGER NOT NULL CHECK (available_seats >= 1 AND available_seats <= 6),
@@ -247,6 +258,7 @@ DECLARE
   v_to_loc TEXT;
   v_request_id UUID;
   v_caller_id UUID;
+  v_caller_phone TEXT;
   v_existing_pending_id UUID;
 BEGIN
   -- 1. Derive authenticated caller from Supabase session (Never trust client UUID)
@@ -255,12 +267,21 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Unauthenticated user session');
   END IF;
 
-  -- 2. Validate p_seats_requested range (1 to 5)
+  -- 2. Validate Caller Phone: Requester must have a valid phone number in public.profiles
+  SELECT phone INTO v_caller_phone
+  FROM public.profiles
+  WHERE id = v_caller_id;
+
+  IF v_caller_phone IS NULL OR trim(v_caller_phone) = '' THEN
+    RETURN json_build_object('success', false, 'message', 'Phone number is required before requesting a ride');
+  END IF;
+
+  -- 3. Validate p_seats_requested range (1 to 5)
   IF p_seats_requested IS NULL OR p_seats_requested < 1 OR p_seats_requested > 5 THEN
     RETURN json_build_object('success', false, 'message', 'Requested seats must be between 1 and 5');
   END IF;
 
-  -- 3. Lock active ride FOR UPDATE and verify existence & available seats
+  -- 4. Lock active ride FOR UPDATE and verify existence & available seats
   SELECT offered_by, available_seats, from_location, to_location
   INTO v_offered_by, v_available_seats, v_from_loc, v_to_loc
   FROM public.rides
@@ -271,12 +292,12 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'Target ride not found or not active');
   END IF;
 
-  -- 4. Verify caller is not the ride owner
+  -- 5. Verify caller is not the ride owner
   IF v_caller_id = v_offered_by THEN
     RETURN json_build_object('success', false, 'message', 'You cannot request to join your own ride');
   END IF;
 
-  -- 5. Prevent duplicate pending requests from same user for same ride
+  -- 6. Prevent duplicate pending requests from same user for same ride
   SELECT id INTO v_existing_pending_id
   FROM public.ride_requests
   WHERE ride_id = p_ride_id AND requested_by = v_caller_id AND status = 'pending'
@@ -286,17 +307,17 @@ BEGIN
     RETURN json_build_object('success', false, 'message', 'You already have a pending request for this ride');
   END IF;
 
-  -- 6. Check seat availability
+  -- 7. Check seat availability
   IF v_available_seats < p_seats_requested THEN
     RETURN json_build_object('success', false, 'message', 'Not enough available seats left for this ride');
   END IF;
 
-  -- 7. Insert ride request atomically
+  -- 8. Insert ride request atomically
   INSERT INTO public.ride_requests (ride_id, requested_by, seats_requested, status)
   VALUES (p_ride_id, v_caller_id, p_seats_requested, 'pending')
   RETURNING id INTO v_request_id;
 
-  -- 8. Create Notification 1 for Requester (v_caller_id)
+  -- 9. Create Notification 1 for Requester (v_caller_id)
   INSERT INTO public.notifications (user_id, title, message, type, is_read)
   VALUES (
     v_caller_id,
@@ -306,7 +327,7 @@ BEGIN
     false
   );
 
-  -- 9. Create Notification 2 for Ride Owner (v_offered_by)
+  -- 10. Create Notification 2 for Ride Owner (v_offered_by)
   INSERT INTO public.notifications (user_id, title, message, type, is_read)
   VALUES (
     v_offered_by,
@@ -321,6 +342,48 @@ BEGIN
     'request_id', v_request_id,
     'message', 'Ride request sent successfully'
   );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
+
+
+-- ====================================================================
+-- SECURE CONTACT RETRIEVAL FOR ACCEPTED RIDES
+-- ====================================================================
+CREATE OR REPLACE FUNCTION public.get_accepted_ride_contacts()
+RETURNS TABLE (
+  request_id UUID,
+  ride_id UUID,
+  participant_id UUID,
+  participant_name TEXT,
+  participant_phone TEXT,
+  participant_photo TEXT
+) AS $$
+DECLARE
+  v_caller_id UUID;
+BEGIN
+  -- Derive caller from authenticated session
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL THEN
+    RETURN;
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    rr.id AS request_id,
+    rr.ride_id,
+    p.id AS participant_id,
+    p.name AS participant_name,
+    p.phone AS participant_phone,
+    p.photo_url AS participant_photo
+  FROM public.ride_requests rr
+  JOIN public.rides r ON r.id = rr.ride_id
+  JOIN public.profiles p ON (
+    (r.offered_by = v_caller_id AND p.id = rr.requested_by)
+    OR
+    (rr.requested_by = v_caller_id AND p.id = r.offered_by)
+  )
+  WHERE rr.status = 'accepted'
+    AND (r.offered_by = v_caller_id OR rr.requested_by = v_caller_id);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
@@ -447,7 +510,13 @@ CREATE POLICY "Authenticated users can view active rides"
 
 CREATE POLICY "Users can insert their own ride offers"
   ON public.rides FOR INSERT
-  WITH CHECK (auth.uid() = offered_by);
+  WITH CHECK (
+    auth.uid() = offered_by
+    AND EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE id = auth.uid() AND phone IS NOT NULL AND trim(phone) != ''
+    )
+  );
 
 CREATE POLICY "Users can update or cancel their own rides"
   ON public.rides FOR UPDATE
@@ -514,7 +583,9 @@ CREATE POLICY "Users can update their own recurring rides"
 REVOKE EXECUTE ON FUNCTION public.accept_ride_request(UUID, UUID) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.send_ride_request(UUID, INT) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.decline_ride_request(UUID) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.get_accepted_ride_contacts() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION public.accept_ride_request(UUID, UUID) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.send_ride_request(UUID, INT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.decline_ride_request(UUID) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.get_accepted_ride_contacts() TO authenticated, service_role;

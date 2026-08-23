@@ -2,24 +2,52 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { useApp } from '../context/AppContext';
+import { generateTimeSlotsForDate, getTodayDateIST } from '../lib/timeUtils';
+import { TimeSlotPicker } from '../components/TimeSlotPicker';
+import { LocationAutocomplete } from '../components/LocationAutocomplete';
 
 export const FindRidePage = () => {
   const navigate = useNavigate();
   const { searchCriteria, setSearchCriteria, performSearch } = useApp();
 
-  const [from, setFrom] = useState(searchCriteria.from || '');
-  const [to, setTo] = useState(searchCriteria.to || '');
-  const [date, setDate] = useState(searchCriteria.date || new Date().toISOString().split('T')[0]);
+  const todayDate = getTodayDateIST();
+
+  const initialFrom = searchCriteria.from || '';
+  const initialTo = searchCriteria.to || '';
+
+  const [fromLocation, setFromLocation] = useState(typeof initialFrom === 'object' ? initialFrom : null);
+  const [fromInput, setFromInput] = useState(typeof initialFrom === 'object' ? initialFrom.label : initialFrom);
+
+  const [toLocation, setToLocation] = useState(typeof initialTo === 'object' ? initialTo : null);
+  const [toInput, setToInput] = useState(typeof initialTo === 'object' ? initialTo.label : initialTo);
+
+  const [date, setDate] = useState(searchCriteria.date || todayDate);
   const [time, setTime] = useState(searchCriteria.time || '');
   const [selectedSeatOption, setSelectedSeatOption] = useState(searchCriteria.totalSeats || 1);
   const [selectedPreferences, setSelectedPreferences] = useState([]);
 
+  const timeSlots = generateTimeSlotsForDate(date);
+
+  const handleDateChange = (newDate) => {
+    setDate(newDate);
+    const newSlots = generateTimeSlotsForDate(newDate);
+    if (time && !newSlots.some((s) => s.value === time)) {
+      setTime('');
+    }
+  };
+
   const seatOptions = [
-    { label: 'Just me', totalSeats: 1 },
-    { label: 'Me + 1', totalSeats: 2 },
-    { label: 'Me + 2', totalSeats: 3 },
-    { label: 'Me + 3', totalSeats: 4 },
-    { label: 'Me + 4', totalSeats: 5 }
+    { label: 'Just me (1)', totalSeats: 1 },
+    { label: 'Me + 1 (2)', totalSeats: 2 },
+    { label: 'Me + 2 (3)', totalSeats: 3 },
+    { label: 'Me + 3 (4)', totalSeats: 4 },
+    { label: 'Me + 4 (5)', totalSeats: 5 }
+  ];
+
+  const travelPreferences = [
+    { label: 'AC Required', icon: 'ac_unit' },
+    { label: 'No Smoking', icon: 'smoke_free' },
+    { label: 'Women Only', icon: 'female' }
   ];
 
   const togglePreference = (pref) => {
@@ -37,8 +65,8 @@ export const FindRidePage = () => {
     setSearching(true);
 
     const criteria = {
-      from,
-      to,
+      from: fromLocation || fromInput,
+      to: toLocation || toInput,
       date,
       time,
       totalSeats: selectedSeatOption,
@@ -61,51 +89,41 @@ export const FindRidePage = () => {
       <TopBar title="Find a Ride" showBack={true} />
 
       <form onSubmit={handleSearch} className="px-container-margin py-md flex flex-col gap-lg pb-24">
-        {/* Route Locations Container */}
+        {/* Route Details */}
         <div className="bg-surface-container-lowest rounded-2xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex flex-col gap-md">
           <h2 className="font-headline-md text-headline-md text-on-surface font-semibold border-b border-outline-variant/20 pb-2">
             Route Details
           </h2>
 
           {/* Starting Location */}
-          <div>
-            <label htmlFor="starting-location" className="block font-label-bold text-label-bold text-on-surface-variant mb-1 ml-1">
-              Starting location (Pickup)
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary">
-                location_on
-              </span>
-              <input
-                id="starting-location"
-                type="text"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-                placeholder="e.g. Hazratganj, Lucknow"
-                className="w-full h-[52px] pl-10 pr-4 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none transition-all"
-              />
-            </div>
-          </div>
+          <LocationAutocomplete
+            id="starting-location"
+            label="Starting location (Pickup)"
+            placeholder="e.g. Hazratganj, Lucknow"
+            value={fromInput}
+            onChange={(text) => setFromInput(text)}
+            onSelect={(loc) => {
+              setFromLocation(loc);
+              if (loc) setFromInput(loc.label);
+            }}
+            icon="location_on"
+            variant="primary"
+          />
 
           {/* Destination */}
-          <div>
-            <label htmlFor="destination" className="block font-label-bold text-label-bold text-on-surface-variant mb-1 ml-1">
-              Destination (Drop-off)
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">
-                pin_drop
-              </span>
-              <input
-                id="destination"
-                type="text"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-                placeholder="e.g. Gomti Nagar, Lucknow"
-                className="w-full h-[52px] pl-10 pr-4 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none transition-all"
-              />
-            </div>
-          </div>
+          <LocationAutocomplete
+            id="destination"
+            label="Destination (Drop-off)"
+            placeholder="e.g. Gomti Nagar, Lucknow"
+            value={toInput}
+            onChange={(text) => setToInput(text)}
+            onSelect={(loc) => {
+              setToLocation(loc);
+              if (loc) setToInput(loc.label);
+            }}
+            icon="pin_drop"
+            variant="secondary"
+          />
         </div>
 
         {/* Date & Time Grid */}
@@ -122,8 +140,9 @@ export const FindRidePage = () => {
               <input
                 id="ride-date"
                 type="date"
+                min={todayDate}
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => handleDateChange(e.target.value)}
                 className="w-full h-[52px] pl-10 pr-3 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none transition-all"
               />
             </div>
@@ -131,25 +150,16 @@ export const FindRidePage = () => {
 
           {/* Time Picker */}
           <div className="flex-1">
-            <label htmlFor="ride-time" className="block font-label-bold text-label-bold text-on-surface-variant mb-1 ml-1">
-              Time
-            </label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">
-                schedule
-              </span>
-              <select
-                id="ride-time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full h-[52px] pl-10 pr-3 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none transition-all appearance-none"
-              >
-                <option value="">Any time</option>
-                <option value="Morning">Morning (06:00 - 11:59)</option>
-                <option value="Afternoon">Afternoon (12:00 - 16:59)</option>
-                <option value="Evening">Evening (17:00 - 20:59)</option>
-              </select>
-            </div>
+            <TimeSlotPicker
+              id="ride-time"
+              label="Time"
+              value={time}
+              onChange={setTime}
+              slots={timeSlots}
+              allowAny={true}
+              anyLabel="Any time"
+              variant="primary"
+            />
           </div>
         </div>
 
@@ -201,11 +211,7 @@ export const FindRidePage = () => {
             Preferences (Optional)
           </span>
           <div className="flex flex-wrap gap-2">
-            {[
-              { label: 'AC Required', icon: 'ac_unit' },
-              { label: 'No Smoking', icon: 'smoke_free' },
-              { label: 'Women Only', icon: 'female' }
-            ].map(pref => {
+            {travelPreferences.map(pref => {
               const isSelected = selectedPreferences.includes(pref.label);
               return (
                 <button

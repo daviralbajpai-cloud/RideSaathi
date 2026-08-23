@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { useApp } from '../context/AppContext';
+import { LocationAutocomplete } from '../components/LocationAutocomplete';
 
 export const RecurringRidesPage = () => {
   const navigate = useNavigate();
@@ -50,18 +51,23 @@ export const RecurringRidesPage = () => {
 
       <div className="px-container-margin py-md flex flex-col gap-lg pb-24">
         {/* Active Schedules */}
-        <div className="flex flex-col gap-md">
-          <h2 className="font-headline-md text-headline-md text-on-surface font-bold">
-            Your Active Recurring Schedules
-          </h2>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-headline-md text-headline-md text-on-surface font-bold">
+              Active Recurring Rides
+            </h2>
+            <span className="text-body-sm text-outline font-medium">
+              {recurringRides.length} active
+            </span>
+          </div>
 
           {recurringRides.map(rec => (
-            <div key={rec.id} className="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex flex-col gap-sm">
-              <div className="flex items-center justify-between">
+            <div key={rec.id} className="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex flex-col gap-2">
+              <div className="flex items-center justify-between pb-1 border-b border-outline-variant/20">
                 <span className="font-headline-md text-headline-md font-bold text-on-surface">
                   {rec.from} → {rec.to}
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container text-[11px] font-bold">
+                <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
                   {rec.status}
                 </span>
               </div>
@@ -75,7 +81,7 @@ export const RecurringRidesPage = () => {
                   return (
                     <span
                       key={d}
-                      className={`w-7 h-7 rounded-full text-[11px] font-bold flex items-center justify-center ${
+                      className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center ${
                         isActive
                           ? 'bg-primary text-on-primary'
                           : 'bg-surface-container-high text-outline'
@@ -92,46 +98,41 @@ export const RecurringRidesPage = () => {
 
         {/* Create New Form */}
         <form onSubmit={handleCreate} className="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex flex-col gap-md">
-          <h3 className="font-headline-md text-headline-md text-on-surface font-semibold border-b border-outline-variant/20 pb-2">
-            Create Recurring Ride
+          <h3 className="font-headline-md text-headline-md text-on-surface font-bold border-b border-outline-variant/20 pb-2 flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-primary text-lg">calendar_add_on</span>
+            Create Recurring Ride Schedule
           </h3>
 
-          <div>
-            <label htmlFor="starting-location-recurring" className="block font-label-bold text-label-bold text-on-surface-variant mb-1 ml-1">
-              Starting location (Pickup)
-            </label>
-            <input
-              id="starting-location-recurring"
-              type="text"
-              required
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              placeholder="e.g. Hazratganj"
-              className="w-full h-[52px] px-4 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none transition-all"
-            />
-          </div>
+          <LocationAutocomplete
+            id="starting-location-recurring"
+            label="Pickup Location"
+            placeholder="e.g. Hazratganj, Lucknow"
+            value={from}
+            onChange={setFrom}
+            onSelect={(loc) => {
+              if (loc) setFrom(loc.label);
+            }}
+            variant="primary"
+          />
 
-          <div>
-            <label htmlFor="destination-recurring" className="block font-label-bold text-label-bold text-on-surface-variant mb-1 ml-1">
-              Destination (Drop-off)
-            </label>
-            <input
-              id="destination-recurring"
-              type="text"
-              required
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              placeholder="e.g. Gomti Nagar IT Park"
-              className="w-full h-[52px] px-4 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none transition-all"
-            />
-          </div>
+          <LocationAutocomplete
+            id="destination-recurring"
+            label="Drop-off Destination"
+            placeholder="e.g. Gomti Nagar, Lucknow"
+            value={to}
+            onChange={setTo}
+            onSelect={(loc) => {
+              if (loc) setTo(loc.label);
+            }}
+            variant="secondary"
+          />
 
           {/* Repeat Days Selector */}
           <div>
-            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-2 ml-1">
-              Repeat Days
+            <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1 ml-1">
+              Repeat On
             </label>
-            <div className="flex justify-between gap-1">
+            <div className="flex justify-between gap-1.5">
               {allDays.map(day => {
                 const isSelected = selectedDays.includes(day);
                 return (
@@ -139,10 +140,10 @@ export const RecurringRidesPage = () => {
                     key={day}
                     type="button"
                     onClick={() => toggleDay(day)}
-                    className={`flex-1 h-10 rounded-xl text-body-sm font-bold transition-all ${
+                    className={`flex-1 h-9 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                       isSelected
-                        ? 'bg-primary text-on-primary shadow-sm'
-                        : 'bg-surface-container-low border border-outline-variant/30 text-on-surface-variant'
+                        ? 'bg-primary text-on-primary border-primary shadow-sm'
+                        : 'bg-surface-container-low border-outline-variant/40 text-on-surface-variant'
                     }`}
                   >
                     {day}
@@ -152,7 +153,7 @@ export const RecurringRidesPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-md">
+          <div className="flex gap-3">
             <div className="flex-1">
               <label htmlFor="departure-time-recurring" className="block font-label-bold text-label-bold text-on-surface-variant mb-1 ml-1">
                 Departure Time
@@ -162,7 +163,7 @@ export const RecurringRidesPage = () => {
                 type="text"
                 value={departureTime}
                 onChange={(e) => setDepartureTime(e.target.value)}
-                className="w-full h-[52px] px-3 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none"
+                className="w-full h-[48px] px-3 rounded-xl border border-outline-variant/50 bg-surface text-on-surface text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
             <div className="flex-1">
@@ -176,17 +177,17 @@ export const RecurringRidesPage = () => {
                 max="6"
                 value={availableSeats}
                 onChange={(e) => setAvailableSeats(Number(e.target.value))}
-                className="w-full h-[52px] px-3 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-lg text-on-surface outline-none"
+                className="w-full h-[48px] px-3 rounded-xl border border-outline-variant/50 bg-surface text-on-surface text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full min-h-[52px] bg-primary text-on-primary rounded-xl font-label-bold text-label-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-sm mt-2"
+            className="w-full min-h-[48px] bg-primary text-on-primary rounded-xl font-label-bold text-body-sm flex items-center justify-center gap-2 transition-all shadow-sm hover:bg-primary/90 cursor-pointer active:scale-98 mt-1"
           >
-            <span className="material-symbols-outlined text-xl">update</span>
-            Save Recurring Schedule
+            <span className="material-symbols-outlined text-base">update</span>
+            <span>Create Recurring Ride</span>
           </button>
         </form>
       </div>

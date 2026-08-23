@@ -1,4 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { validatePhoneNumber } from '../lib/phoneUtils';
+import { isRideExpired, getTodayDateIST } from '../lib/timeUtils';
 
 export const rideService = {
   // Create a new ride offer
@@ -15,10 +17,34 @@ export const rideService = {
       return { data: null, error: authError || new Error('You must be signed in to offer a ride.') };
     }
 
+    // Security Check: Verify user has a valid 10-digit phone number in their database profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('phone')
+      .eq('id', authUser.id)
+      .maybeSingle();
+
+    const phoneValidation = validatePhoneNumber(profile?.phone);
+    if (!phoneValidation.isValid) {
+      return {
+        data: null,
+        error: new Error('A valid 10-digit phone number is required before offering a ride. Please add your phone number in your Profile.')
+      };
+    }
+
+    const fromLabel = typeof rideData.from === 'object' ? rideData.from.label : rideData.from;
+    const toLabel = typeof rideData.to === 'object' ? rideData.to.label : rideData.to;
+
     const payload = {
       offered_by: authUser.id,
-      from_location: rideData.from,
-      to_location: rideData.to,
+      from_location: fromLabel,
+      to_location: toLabel,
+      from_latitude: rideData.fromLatitude ?? (typeof rideData.from === 'object' ? rideData.from.latitude : null),
+      from_longitude: rideData.fromLongitude ?? (typeof rideData.from === 'object' ? rideData.from.longitude : null),
+      to_latitude: rideData.toLatitude ?? (typeof rideData.to === 'object' ? rideData.to.latitude : null),
+      to_longitude: rideData.toLongitude ?? (typeof rideData.to === 'object' ? rideData.to.longitude : null),
+      from_place_id: rideData.fromPlaceId ?? (typeof rideData.from === 'object' ? rideData.from.placeId : null),
+      to_place_id: rideData.toPlaceId ?? (typeof rideData.to === 'object' ? rideData.to.placeId : null),
       ride_date: rideData.date,
       departure_time: rideData.departureTime,
       available_seats: Number(rideData.availableSeats),
@@ -50,9 +76,22 @@ export const rideService = {
 
     const { data: authUserData } = await supabase.auth.getUser();
     console.log('AUTH USER:', authUserData?.user?.id);
+
+    // Extract core place terms for flexible matching
+    const extractSearchTerm = (loc) => {
+      if (!loc) return '';
+      if (typeof loc === 'object') {
+        return loc.name || (loc.label ? loc.label.split(',')[0].trim() : '');
+      }
+      return typeof loc === 'string' ? loc.split(',')[0].trim() : '';
+    };
+
+    const fromTerm = extractSearchTerm(from);
+    const toTerm = extractSearchTerm(to);
+
     console.log({
-      fromLocation: from,
-      toLocation: to,
+      fromTerm,
+      toTerm,
       rideDate: date,
       seatsNeeded: totalSeats
     });
@@ -63,14 +102,18 @@ export const rideService = {
       .eq('status', 'active')
       .gte('available_seats', Number(totalSeats) || 1);
 
-    if (date && date.trim()) {
+    if (date && typeof date === 'string' && date.trim()) {
       query = query.gte('ride_date', date.trim());
+    } else {
+      const todayIST = getTodayDateIST();
+      query = query.gte('ride_date', todayIST);
     }
-    if (from && from.trim()) {
-      query = query.ilike('from_location', `%${from.trim()}%`);
+
+    if (fromTerm) {
+      query = query.ilike('from_location', `%${fromTerm}%`);
     }
-    if (to && to.trim()) {
-      query = query.ilike('to_location', `%${to.trim()}%`);
+    if (toTerm) {
+      query = query.ilike('to_location', `%${toTerm}%`);
     }
 
     let { data: rides, error } = await query.order('created_at', { ascending: false });
@@ -80,8 +123,11 @@ export const rideService = {
       return { data: null, error };
     }
 
+    // Defense-in-depth: Filter out any rides whose departure time has passed
+    const unexpiredRides = rides.filter(ride => !isRideExpired(ride.ride_date, ride.departure_time));
+
     // Collect unique offered_by UUIDs
-    const offererIds = [...new Set(rides.map(r => r.offered_by).filter(Boolean))];
+    const offererIds = [...new Set(unexpiredRides.map(r => r.offered_by).filter(Boolean))];
 
     // Fetch public profile information (id, name, photo_url)
     let publicProfiles = [];
@@ -94,7 +140,7 @@ export const rideService = {
     }
 
     // Merge public profile into each ride as offered_by_profile
-    const mergedRides = rides.map(ride => {
+    const mergedRides = unexpiredRides.map(ride => {
       const profile = publicProfiles.find(p => p.id === ride.offered_by);
       return {
         ...ride,
@@ -102,7 +148,7 @@ export const rideService = {
       };
     });
 
-    console.log('RIDES:', mergedRides);
+    console.log('ACTIVE UNEXPIRED RIDES:', mergedRides);
     return { data: mergedRides, error: null };
   },
 
@@ -142,6 +188,24 @@ export const rideService = {
     if (!rideId) {
       console.error('RideSaathi Error: Missing rideId for ride request.');
       return { data: null, error: new Error('Invalid ride selected.') };
+    }
+
+    // Security Check: Verify user has a valid 10-digit phone number before calling RPC
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('id', authUser.id)
+        .maybeSingle();
+
+      const phoneValidation = validatePhoneNumber(profile?.phone);
+      if (!phoneValidation.isValid) {
+        return {
+          data: null,
+          error: new Error('A valid 10-digit phone number is required before requesting a ride. Please add your phone number in your Profile.')
+        };
+      }
     }
 
     const { data: rpcRes, error: rpcErr } = await supabase.rpc('send_ride_request', {
@@ -316,28 +380,84 @@ export const rideService = {
     console.log("REQUESTS:", JSON.stringify(requests, null, 2));
     console.log("REQUEST ERROR:", requestsError);
 
-    // 4. Fetch public profiles for requester names
-    const { data: profiles } = await supabase
-      .from('public_profiles')
-      .select('id, name, photo_url');
+    // 4. Collect all participant IDs for names and photos
+    const allParticipantIds = new Set();
+    const acceptedOtherParticipantIds = new Set();
 
-    // 5. Match requests to rides in JS (no nested query join)
+    (requests || []).forEach(request => {
+      if (request.requested_by) allParticipantIds.add(request.requested_by);
+      const matchedRide = (rides || []).find(ride => ride.id === request.ride_id);
+      if (matchedRide?.offered_by) allParticipantIds.add(matchedRide.offered_by);
+
+      // Privacy Check: Only collect target participant ID if request is ACCEPTED
+      if (request.status === 'accepted' && matchedRide) {
+        if (matchedRide.offered_by === currentUserId && request.requested_by !== currentUserId) {
+          // Offerer needs requester's phone
+          acceptedOtherParticipantIds.add(request.requested_by);
+        } else if (request.requested_by === currentUserId) {
+          // Requester needs offerer's phone
+          acceptedOtherParticipantIds.add(matchedRide.offered_by);
+        }
+      }
+    });
+
+    // 5. Fetch public profile information (names & photos)
+    let profiles = [];
+    if (allParticipantIds.size > 0) {
+      const { data: pubProfs } = await supabase
+        .from('public_profiles')
+        .select('id, name, photo_url')
+        .in('id', Array.from(allParticipantIds));
+
+      if (pubProfs && pubProfs.length > 0) {
+        profiles = pubProfs;
+      } else {
+        const { data: directProfs } = await supabase
+          .from('profiles')
+          .select('id, name, photo_url')
+          .in('id', Array.from(allParticipantIds));
+        if (directProfs) profiles = directProfs;
+      }
+    }
+
+    // 6. Fetch phone numbers ONLY for participants in ACCEPTED requests via secure RPC
+    const acceptedPhoneMap = new Map();
+    try {
+      const { data: contacts, error: contactErr } = await supabase
+        .rpc('get_accepted_ride_contacts');
+
+      if (!contactErr && contacts && contacts.length > 0) {
+        contacts.forEach(c => {
+          if (c.participant_phone && c.participant_phone.trim() !== '') {
+            acceptedPhoneMap.set(c.participant_id, c.participant_phone.trim());
+          }
+        });
+      } else if (acceptedOtherParticipantIds.size > 0) {
+        // Fallback query for accepted participants
+        const { data: phoneData } = await supabase
+          .from('profiles')
+          .select('id, phone')
+          .in('id', Array.from(acceptedOtherParticipantIds));
+
+        if (phoneData) {
+          phoneData.forEach(p => {
+            if (p.phone && p.phone.trim() !== '') {
+              acceptedPhoneMap.set(p.id, p.phone.trim());
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Error fetching accepted contacts:', e);
+    }
+
+    // 7. Match requests to rides in JS
     const receivedRequestsRaw = [];
     const myRequestsRaw = [];
 
     (requests || []).forEach(request => {
       const matchedRide = (rides || []).find(ride => ride.id === request.ride_id);
       const isIncomingRequest = matchedRide?.offered_by === currentUserId && request.requested_by !== currentUserId;
-
-      console.log({
-        requestId: request.id,
-        requestRideId: request.ride_id,
-        requestedBy: request.requested_by,
-        matchedRideId: matchedRide?.id,
-        offeredBy: matchedRide?.offered_by,
-        currentUserId: currentUserId,
-        isIncomingRequest: isIncomingRequest
-      });
 
       if (isIncomingRequest) {
         receivedRequestsRaw.push({ ...request, ride: matchedRide });
@@ -346,31 +466,62 @@ export const rideService = {
       }
     });
 
-    const offeredRides = (rides || [])
-      .filter(r => r.offered_by === currentUserId)
-      .map(r => ({
-        id: r.id,
-        personOffering: 'You',
-        personPhoto: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-        from: r.from_location,
-        to: r.to_location,
-        date: r.ride_date,
-        time: r.departure_time,
-        availableSeats: r.available_seats,
-        status: r.status === 'active' ? 'Active Offer' : r.status
-      }));
+    const offeredRides = [];
+    const completedRides = [];
+    const cancelledRides = [];
 
-    const requestsTabItems = receivedRequestsRaw.map(req => {
-      const requester = (profiles || []).find(p => p.id === req.requested_by);
+    (rides || [])
+      .filter(r => r.offered_by === currentUserId)
+      .forEach(r => {
+        const isExpired = isRideExpired(r.ride_date, r.departure_time);
+        const item = {
+          id: r.id,
+          personOffering: 'You',
+          personPhoto: user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          from: r.from_location,
+          to: r.to_location,
+          date: r.ride_date,
+          time: r.departure_time,
+          availableSeats: r.available_seats,
+          status: r.status === 'active' ? 'Active Offer' : (r.status === 'completed' ? 'Completed' : (r.status === 'cancelled' ? 'Cancelled' : r.status))
+        };
+
+        if (r.status === 'completed') {
+          completedRides.push(item);
+        } else if (r.status === 'cancelled') {
+          cancelledRides.push(item);
+        } else {
+          // Status is active: check if ride date/time has passed
+          if (isExpired) {
+            completedRides.push({
+              ...item,
+              status: 'Completed'
+            });
+          } else {
+            offeredRides.push(item);
+          }
+        }
+      });
+
+    const requestsTabItems = [];
+    receivedRequestsRaw.forEach(req => {
+      const requester = profiles.find(p => p.id === req.requested_by);
       let displayStatus = 'Pending Confirmation';
       if (req.status === 'accepted') displayStatus = 'Accepted';
       if (req.status === 'declined') displayStatus = 'Declined';
+      if (req.status === 'cancelled') displayStatus = 'Cancelled';
 
-      return {
+      // Attach phone only when accepted
+      const isAccepted = req.status === 'accepted';
+      const personPhone = isAccepted ? (acceptedPhoneMap.get(req.requested_by) || '') : null;
+      const isExpired = isRideExpired(req.ride?.ride_date, req.ride?.departure_time);
+
+      const item = {
         id: req.id,
         rideId: req.ride_id,
         personRequesting: requester?.name || 'Commuter',
         personPhoto: requester?.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        personPhone: personPhone,
         from: req.ride?.from_location || '',
         to: req.ride?.to_location || '',
         date: req.ride?.ride_date || '',
@@ -378,18 +529,41 @@ export const rideService = {
         seatsRequested: req.seats_requested,
         status: displayStatus
       };
+
+      if (req.status === 'declined' || req.status === 'cancelled') {
+        cancelledRides.push(item);
+        return;
+      }
+
+      // If ride date/time has passed:
+      // - Pending request: exclude from active Ride Requests tab
+      // - Accepted request: ride is completed (offered ride appears under Completed)
+      if (isExpired) {
+        return;
+      }
+
+      requestsTabItems.push(item);
     });
 
-    const upcomingTabItems = myRequestsRaw.map(req => {
+    const upcomingTabItems = [];
+    myRequestsRaw.forEach(req => {
+      const offerer = profiles.find(p => p.id === req.ride?.offered_by);
       let displayStatus = 'Pending Confirmation';
       if (req.status === 'accepted') displayStatus = 'Accepted';
       if (req.status === 'declined') displayStatus = 'Declined';
+      if (req.status === 'cancelled') displayStatus = 'Cancelled';
 
-      return {
+      // Attach phone only when accepted
+      const isAccepted = req.status === 'accepted';
+      const personPhone = isAccepted ? (acceptedPhoneMap.get(req.ride?.offered_by) || '') : null;
+      const isExpired = isRideExpired(req.ride?.ride_date, req.ride?.departure_time);
+
+      const item = {
         id: req.id,
         rideId: req.ride_id,
-        personOffering: 'Person offering ride',
-        personPhoto: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        personOffering: offerer?.name || 'RideSaathi User',
+        personPhoto: offerer?.photo_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        personPhone: personPhone,
         from: req.ride?.from_location || '',
         to: req.ride?.to_location || '',
         date: req.ride?.ride_date || '',
@@ -397,18 +571,35 @@ export const rideService = {
         seatsRequested: req.seats_requested,
         status: displayStatus
       };
-    });
 
-    console.log("ACTIVITY RAW REQUEST DATA:", JSON.stringify(requests, null, 2));
-    console.log("ACTIVITY FINAL REQUEST DATA:", JSON.stringify(requestsTabItems, null, 2));
+      if (req.status === 'declined' || req.status === 'cancelled') {
+        cancelledRides.push(item);
+        return;
+      }
+
+      if (isExpired) {
+        if (isAccepted) {
+          // Accepted ride whose date/time passed -> Move to Completed tab with contact phone intact
+          completedRides.push({
+            ...item,
+            status: 'Completed'
+          });
+        }
+        // If pending and expired -> Exclude from active Upcoming tab (do not delete DB record)
+        return;
+      }
+
+      // Unexpired active upcoming journey
+      upcomingTabItems.push(item);
+    });
 
     return {
       data: {
         offered: offeredRides,
         requests: requestsTabItems,
         upcoming: upcomingTabItems,
-        completed: [],
-        cancelled: []
+        completed: completedRides,
+        cancelled: cancelledRides
       },
       error: ridesError || requestsError
     };

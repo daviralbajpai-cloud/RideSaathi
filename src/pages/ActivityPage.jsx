@@ -1,18 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { TopBar } from '../components/TopBar';
 import { useApp } from '../context/AppContext';
+import { isRideExpired } from '../lib/timeUtils';
 
 export const ActivityPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { activity, user, fetchUserActivity, acceptRequest, declineRequest } = useApp();
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeTab, setActiveTab] = useState(location.state?.tab || 'upcoming');
+  const [, setTick] = useState(Date.now());
 
-  useEffect(() => {
+  const refreshActivity = useCallback(() => {
     if (user?.id && fetchUserActivity) {
       fetchUserActivity(user.id);
     }
+    setTick(Date.now());
   }, [user?.id, fetchUserActivity]);
+
+  useEffect(() => {
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab);
+    }
+  }, [location.state?.tab]);
+
+  // Initial fetch on mount / user change
+  useEffect(() => {
+    refreshActivity();
+  }, [refreshActivity]);
+
+  // Automatic refresh when page becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshActivity();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refreshActivity]);
+
+  // Lightweight periodic refresh every 45 seconds while Activity page is open
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refreshActivity();
+    }, 45000);
+    return () => clearInterval(intervalId);
+  }, [refreshActivity]);
 
   const tabs = [
     { key: 'upcoming', label: 'Upcoming' },
@@ -22,7 +58,37 @@ export const ActivityPage = () => {
     { key: 'cancelled', label: 'Cancelled' },
   ];
 
-  const currentItems = activity[activeTab] || [];
+  // Defensive display-layer filtering to guarantee expired rides never appear in active tabs
+  const getDisplayItems = () => {
+    const rawItems = activity[activeTab] || [];
+
+    if (activeTab === 'upcoming') {
+      // Exclude expired upcoming rides or pending requests
+      return rawItems.filter(item => !isRideExpired(item.date, item.time));
+    }
+
+    if (activeTab === 'requests') {
+      // Exclude pending requests for expired rides
+      return rawItems.filter(item => !isRideExpired(item.date, item.time));
+    }
+
+    if (activeTab === 'offered') {
+      // Exclude expired offered rides
+      return rawItems.filter(item => !isRideExpired(item.date, item.time));
+    }
+
+    if (activeTab === 'completed') {
+      return rawItems;
+    }
+
+    if (activeTab === 'cancelled') {
+      return rawItems;
+    }
+
+    return rawItems;
+  };
+
+  const currentItems = getDisplayItems();
 
   return (
     <div className="w-full flex-1 flex flex-col">
@@ -36,10 +102,10 @@ export const ActivityPage = () => {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-3.5 py-2 rounded-xl text-body-sm font-label-bold whitespace-nowrap transition-all ${
+              className={`px-4 py-1.5 rounded-full text-body-sm whitespace-nowrap transition-colors ${
                 isActive
                   ? 'bg-primary text-on-primary font-bold shadow-sm'
-                  : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
+                  : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
               }`}
             >
               {tab.label}
@@ -55,10 +121,10 @@ export const ActivityPage = () => {
               <span className="material-symbols-outlined">history</span>
             </div>
             <h3 className="font-headline-md text-headline-md text-on-surface font-semibold">
-              No {tabs.find(t => t.key === activeTab)?.label.toLowerCase()} found
+              No {tabs.find(t => t.key === activeTab)?.label.toLowerCase()} yet
             </h3>
-            <p className="font-body-sm text-body-sm text-on-surface-variant max-w-[260px]">
-              Find or offer a ride to see your journey history here.
+            <p className="font-body-sm text-body-sm text-on-surface-variant max-w-xs">
+              When you book or offer rides, your activity will appear right here.
             </p>
             <div className="flex gap-2 mt-2">
               <button
@@ -76,80 +142,123 @@ export const ActivityPage = () => {
             </div>
           </div>
         ) : (
-          currentItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex flex-col gap-sm"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
-                <div className="flex items-center gap-3">
-                  {item.personPhoto && (
-                    <img
-                      src={item.personPhoto}
-                      alt={item.personOffering || item.personRequesting || "User"}
-                      className="w-10 h-10 rounded-full object-cover border border-outline-variant/30"
-                    />
-                  )}
-                  <div>
-                    <h3 className="font-headline-md text-body-lg text-on-surface font-bold">
-                      {item.personOffering || item.personRequesting}
-                    </h3>
-                    <p className="font-body-sm text-[12px] text-on-surface-variant">
-                      {item.date} at {item.time}
-                    </p>
+          currentItems.map((item) => {
+            const expired = isRideExpired(item.date, item.time);
+            return (
+              <div
+                key={item.id}
+                className="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex flex-col gap-md"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between pb-2 border-b border-outline-variant/20">
+                  <div className="flex items-center gap-2.5">
+                    {item.personPhoto && (
+                      <img
+                        src={item.personPhoto}
+                        alt={item.personOffering || item.personRequesting || "User"}
+                        className="w-10 h-10 rounded-full object-cover border border-primary/20"
+                      />
+                    )}
+                    <div>
+                      <h3 className="font-headline-md text-headline-md text-on-surface font-bold">
+                        {item.personOffering || item.personRequesting}
+                      </h3>
+                      <p className="font-body-sm text-[12px] text-on-surface-variant">
+                        {item.date} at {item.time}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-[11px] font-bold ${
-                    item.status === 'Accepted' || item.status === 'Confirmed' || item.status === 'Completed'
-                      ? 'bg-secondary-container text-on-secondary-container'
-                      : item.status === 'Declined' || item.status === 'Cancelled'
-                      ? 'bg-error-container text-on-error-container'
-                      : 'bg-primary-container/20 text-primary'
-                  }`}
-                >
-                  {item.status}
-                </span>
-              </div>
 
-              {/* Route */}
-              <div className="flex items-center justify-between py-1 font-headline-md text-headline-md text-on-surface font-bold">
-                <span>{item.from}</span>
-                <span className="material-symbols-outlined text-outline">arrow_forward</span>
-                <span>{item.to}</span>
-              </div>
-
-              {/* Seats Info */}
-              <div className="flex items-center justify-between text-body-sm text-on-surface-variant">
-                <span>
-                  {item.seatsRequested
-                    ? `Seats requested: ${item.seatsRequested}`
-                    : `Available seats: ${item.availableSeats}`}
-                </span>
-              </div>
-
-              {/* Actions for Ride Requests tab */}
-              {activeTab === 'requests' && item.status.includes('Pending') && (
-                <div className="flex gap-2 pt-2 border-t border-outline-variant/20">
-                  <button
-                    onClick={() => acceptRequest(item.id)}
-                    className="flex-1 py-2 rounded-xl bg-secondary text-on-secondary font-label-bold text-body-sm flex items-center justify-center gap-1 shadow-sm"
+                  <span
+                    className={`px-3 py-1 rounded-full text-[11px] font-bold ${
+                      item.status === 'Accepted' || item.status === 'Confirmed' || item.status === 'Completed' || item.status === 'Active Offer'
+                        ? 'bg-secondary-container text-on-secondary-container'
+                        : item.status === 'Declined' || item.status === 'Cancelled'
+                        ? 'bg-error-container text-on-error-container'
+                        : 'bg-primary-container/20 text-primary'
+                    }`}
                   >
-                    <span className="material-symbols-outlined text-base">check</span>
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => declineRequest(item.id)}
-                    className="flex-1 py-2 rounded-xl bg-surface-container-high text-on-surface-variant font-label-bold text-body-sm flex items-center justify-center gap-1 border border-outline-variant/40"
-                  >
-                    <span className="material-symbols-outlined text-base">close</span>
-                    Decline
-                  </button>
+                    {item.status}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))
+
+                {/* Route */}
+                <div className="flex items-center justify-between py-1 font-headline-md text-headline-md text-on-surface font-bold">
+                  <span className="truncate max-w-[45%]">{item.from}</span>
+                  <span className="material-symbols-outlined text-outline shrink-0">arrow_forward</span>
+                  <span className="truncate max-w-[45%] text-right">{item.to}</span>
+                </div>
+
+                {/* Seats Info */}
+                <div className="flex items-center justify-between text-body-sm text-on-surface-variant">
+                  <span>
+                    {item.seatsRequested
+                      ? `Seats requested: ${item.seatsRequested}`
+                      : `Available seats: ${item.availableSeats}`}
+                  </span>
+                </div>
+
+                {/* Contact section: Display for accepted/confirmed rides or completed rides with partner phone */}
+                {(item.status === 'Accepted' || item.status === 'Confirmed' || (item.personPhone && String(item.personPhone).trim() !== '')) && (
+                  <div className="bg-secondary/10 rounded-xl p-3 border border-secondary/20 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[11px] font-bold text-secondary uppercase tracking-wider block">
+                          Confirmed Ride Partner
+                        </span>
+                        <span className="font-headline-md text-body-sm font-bold text-on-surface">
+                          {item.personOffering || item.personRequesting || 'Ride Partner'}
+                        </span>
+                      </div>
+
+                      {item.personPhone && String(item.personPhone).trim() !== '' && (
+                        <a
+                          href={`tel:${String(item.personPhone).trim()}`}
+                          className="px-3 py-1.5 rounded-xl bg-secondary text-on-secondary font-label-bold text-xs flex items-center gap-1 shadow-sm hover:bg-secondary/90 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">call</span>
+                          <span>Call</span>
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-body-sm pt-1 border-t border-secondary/20">
+                      <span className="material-symbols-outlined text-sm text-secondary">call</span>
+                      {item.personPhone && String(item.personPhone).trim() !== '' ? (
+                        <span className="font-medium text-on-surface">
+                          {String(item.personPhone).trim()}
+                        </span>
+                      ) : (
+                        <span className="text-on-surface-variant italic text-xs">
+                          Phone number will appear shortly...
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions for Ride Requests tab */}
+                {activeTab === 'requests' && item.status.includes('Pending') && !expired && (
+                  <div className="flex gap-2 pt-2 border-t border-outline-variant/20">
+                    <button
+                      onClick={() => acceptRequest(item.id)}
+                      className="flex-1 py-2 rounded-xl bg-secondary text-on-secondary font-label-bold text-body-sm flex items-center justify-center gap-1 shadow-sm hover:bg-secondary/90 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base">check</span>
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => declineRequest(item.id)}
+                      className="flex-1 py-2 rounded-xl bg-surface-container-high text-on-surface-variant font-label-bold text-body-sm flex items-center justify-center gap-1 border border-outline-variant/40 hover:bg-surface-container-highest transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-base">close</span>
+                      Decline
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

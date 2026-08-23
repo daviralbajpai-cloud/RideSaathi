@@ -4,17 +4,26 @@ import { TopBar } from '../components/TopBar';
 import { useApp } from '../context/AppContext';
 import { rideService } from '../services/rideService';
 import { isSupabaseConfigured } from '../lib/supabaseClient';
+import { validatePhoneNumber } from '../lib/phoneUtils';
 
 export const RideRequestPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { getRideById, searchCriteria, requestJoinRide } = useApp();
+  const { getRideById, searchCriteria, requestJoinRide, user, updateUserProfile } = useApp();
 
   const [ride, setRide] = useState(() => getRideById(id));
   const [loading, setLoading] = useState(!ride);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Phone Modal State
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [savingPhone, setSavingPhone] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+
+  const hasPhone = Boolean(user?.phone && String(user.phone).trim() !== '');
 
   useEffect(() => {
     let isMounted = true;
@@ -64,7 +73,7 @@ export const RideRequestPage = () => {
   const requestedSeats = searchCriteria.totalSeats || 1;
   const additionalPeople = requestedSeats - 1;
 
-  const handleConfirmRequest = async () => {
+  const executeSendRequest = async () => {
     setSubmitting(true);
     setErrorMsg('');
 
@@ -82,6 +91,42 @@ export const RideRequestPage = () => {
     setTimeout(() => {
       navigate('/activity');
     }, 1200);
+  };
+
+  const handleConfirmRequest = async () => {
+    if (!hasPhone) {
+      setShowPhoneModal(true);
+      return;
+    }
+
+    await executeSendRequest();
+  };
+
+  const handleSavePhoneAndSubmit = async (e) => {
+    e.preventDefault();
+    setPhoneError('');
+
+    const validation = validatePhoneNumber(phoneInput);
+    if (!validation.isValid) {
+      setPhoneError(validation.error || 'Please enter a valid 10-digit phone number.');
+      return;
+    }
+
+    setSavingPhone(true);
+
+    const { error: profileErr } = await updateUserProfile({
+      phone: validation.formatted
+    });
+
+    setSavingPhone(false);
+
+    if (profileErr) {
+      setPhoneError(profileErr.message || 'Failed to save phone number.');
+      return;
+    }
+
+    setShowPhoneModal(false);
+    await executeSendRequest();
   };
 
   return (
@@ -103,6 +148,27 @@ export const RideRequestPage = () => {
           </div>
         ) : (
           <>
+            {/* Phone Required Notice */}
+            {!hasPhone && (
+              <div className="bg-error-container/30 border border-error/40 rounded-2xl p-4 flex flex-col gap-2 shadow-sm">
+                <div className="flex items-center gap-2 text-error font-headline-md font-bold text-sm">
+                  <span className="material-symbols-outlined text-base">emergency_home</span>
+                  <span>Phone Number Required</span>
+                </div>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Please enter your 10-digit phone number before requesting to join. Your number remains private until accepted.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowPhoneModal(true)}
+                  className="mt-1 px-4 py-2 bg-primary text-on-primary rounded-xl font-label-bold text-xs flex items-center justify-center gap-1.5 shadow-sm hover:bg-primary/90 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-sm">add_call</span>
+                  <span>Enter Phone Number</span>
+                </button>
+              </div>
+            )}
+
             {/* Summary Box */}
             <div className="bg-surface-container-lowest rounded-2xl p-md border border-outline-variant/30 shadow-sm flex flex-col gap-md">
               <h2 className="font-headline-md text-headline-md text-on-surface font-bold border-b border-outline-variant/20 pb-2">
@@ -178,6 +244,66 @@ export const RideRequestPage = () => {
           </>
         )}
       </div>
+
+      {/* Phone Number Modal */}
+      {showPhoneModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-surface-container-lowest rounded-2xl p-6 max-w-sm w-full shadow-xl border border-outline-variant/30 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center mx-auto text-2xl">
+              <span className="material-symbols-outlined">add_call</span>
+            </div>
+
+            <div className="text-center">
+              <h3 className="font-headline-md text-lg font-bold text-on-surface">
+                Enter Phone Number
+              </h3>
+              <p className="font-body-sm text-xs text-on-surface-variant mt-1">
+                A valid 10-digit phone number is required before joining a ride.
+              </p>
+            </div>
+
+            <form onSubmit={handleSavePhoneAndSubmit} className="flex flex-col gap-3">
+              <div>
+                <input
+                  type="tel"
+                  required
+                  autoFocus
+                  value={phoneInput}
+                  onChange={(e) => {
+                    setPhoneInput(e.target.value);
+                    if (phoneError) setPhoneError('');
+                  }}
+                  placeholder="+91 98765 43210"
+                  className="w-full h-[48px] px-3 rounded-xl border border-outline-variant/50 bg-surface font-body-lg text-on-surface text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                />
+                {phoneError && (
+                  <p className="text-error text-xs font-semibold mt-1 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-sm">error</span>
+                    {phoneError}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowPhoneModal(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-surface-container-high text-on-surface-variant font-label-bold text-xs hover:bg-surface-container-highest transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingPhone}
+                  className="flex-1 py-2.5 rounded-xl bg-primary text-on-primary font-label-bold text-xs hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-1"
+                >
+                  {savingPhone ? 'Saving...' : 'Save & Submit'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
