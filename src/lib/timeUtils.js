@@ -137,10 +137,10 @@ export const parseRideDateTime = (dateStr, timeStr) => {
   }
 
   let timeToCheck = timeStr.trim();
-  // If time interval (e.g. "08:30 AM - 09:00 AM"), departure time is the start time of the interval
+  // If time interval (e.g. "02:30 AM - 03:00 AM"), use the END time of the interval for expiration
   if (timeToCheck.includes('-')) {
     const parts = timeToCheck.split('-');
-    timeToCheck = parts[0].trim();
+    timeToCheck = parts[parts.length - 1].trim();
   }
 
   let hours = null;
@@ -194,6 +194,7 @@ export const parseRideDateTime = (dateStr, timeStr) => {
 /**
  * Checks whether a ride's scheduled date AND departure time have passed.
  * Returns true if expired, false otherwise.
+ * Includes a 45-minute grace period after the departure window before expiring.
  */
 export const isRideExpired = (dateStr, timeStr) => {
   if (!dateStr) return false;
@@ -212,19 +213,16 @@ export const isRideExpired = (dateStr, timeStr) => {
       return false;
     }
 
-    // If date is today, parse the departure time
+    // If date is today, parse the departure time (end of interval window)
     const rideDateTime = parseRideDateTime(dateStr, timeStr);
     if (!rideDateTime) {
-      // If time could not be parsed but date is today, do not accidentally expire valid rides
-      if (timeStr) {
-        console.warn(`[timeUtils] Safe fallback: unable to parse time "${timeStr}" for today's ride "${dateStr}". Keeping active.`);
-      }
+      // If time could not be parsed but date is today, keep active
       return false;
     }
 
-    // Compare against current timestamp
-    // Expired once the scheduled departure time has been reached/passed
-    return Date.now() >= rideDateTime.getTime();
+    // 45-minute grace period after departure window before considering the ride completed
+    const GRACE_PERIOD_MS = 45 * 60 * 1000;
+    return Date.now() > (rideDateTime.getTime() + GRACE_PERIOD_MS);
   } catch (err) {
     console.error('[timeUtils] Error checking ride expiration:', err);
     return false;
