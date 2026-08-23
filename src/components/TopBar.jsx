@@ -38,12 +38,14 @@ export const TopBar = ({ title, showBack }) => {
       <div className="flex items-center gap-2">
         <button
           onClick={() => navigate('/notifications')}
-          className="relative w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant"
+          className="relative w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant cursor-pointer"
           aria-label="Notifications"
         >
-          <span className="material-symbols-outlined">notifications</span>
+          <span className="material-symbols-outlined text-2xl">notifications</span>
           {unreadNotifs > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-error ring-2 ring-surface"></span>
+            <span className="absolute top-1 right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-error text-white font-bold text-[10px] flex items-center justify-center shadow-sm ring-2 ring-surface animate-in zoom-in-50 duration-150">
+              {unreadNotifs > 9 ? '9+' : unreadNotifs}
+            </span>
           )}
         </button>
 

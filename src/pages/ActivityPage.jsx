@@ -88,6 +88,20 @@ export const ActivityPage = () => {
     return rawItems;
   };
 
+  const upcomingCount = (activity.upcoming || []).filter(item => !isRideExpired(item.date, item.time)).length;
+  const requestsCount = (activity.requests || []).filter(item => !isRideExpired(item.date, item.time)).length;
+  const offeredCount = (activity.offered || []).filter(item => !isRideExpired(item.date, item.time)).length;
+  const completedCount = (activity.completed || []).length;
+  const cancelledCount = (activity.cancelled || []).length;
+
+  const tabCounts = {
+    upcoming: upcomingCount,
+    requests: requestsCount,
+    offered: offeredCount,
+    completed: completedCount,
+    cancelled: cancelledCount
+  };
+
   const currentItems = getDisplayItems();
 
   return (
@@ -95,20 +109,34 @@ export const ActivityPage = () => {
       <TopBar title="My Activity" showBack={false} />
 
       {/* Tabs Header Slider */}
-      <div className="w-full bg-surface-container-lowest border-b border-outline-variant/30 px-container-margin py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <div className="w-full bg-surface-container-lowest border-b border-outline-variant/30 px-container-margin py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key;
+          const count = tabCounts[tab.key] || 0;
           return (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-1.5 rounded-full text-body-sm whitespace-nowrap transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-body-sm whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                 isActive
                   ? 'bg-primary text-on-primary font-bold shadow-sm'
                   : 'bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest'
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {count > 0 && (
+                <span
+                  className={`min-w-[18px] h-[18px] px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center transition-colors ${
+                    isActive
+                      ? 'bg-white text-primary'
+                      : tab.key === 'requests'
+                      ? 'bg-error text-white'
+                      : 'bg-primary/20 text-primary'
+                  }`}
+                >
+                  {count}
+                </span>
+              )}
             </button>
           );
         })}
