@@ -368,4 +368,4 @@ Unless a license is added to this repository, the source code should not be assu
 
 **Serving Those Who Serve the Nation.**
 
-Built to make everyday journeys simpler through community and shared mobility.
+Built to make everyday journeys simpler through community and the shared mobility.
